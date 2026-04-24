@@ -24,6 +24,6 @@
 
 
 ## Схема:
-![Схема](/image/scheme.png "Схема")
+![Схема](/images/scheme.png "Схема")
 
 
