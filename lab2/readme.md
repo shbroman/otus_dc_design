@@ -33,7 +33,7 @@
 
 ### Конфигурация:
 <details>
-<summary> *SPINE1:*</summary>
+<summary> <bold>SPINE1:</bold></summary>
 
 ```
 interface Ethernet1
