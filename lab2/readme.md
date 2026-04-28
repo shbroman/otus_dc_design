@@ -41,6 +41,8 @@ interface Ethernet1
    ip address 10.255.253.100/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet2
    description # DC01-LSW002 #
    speed forced 40gfull
@@ -48,6 +50,8 @@ interface Ethernet2
    ip address 10.255.253.102/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet3
    description # DC01-LSW003 #
    speed forced 40gfull
@@ -55,6 +59,8 @@ interface Ethernet3
    ip address 10.255.253.104/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Loopback0
    ip address 10.255.255.1/32
 
@@ -64,6 +70,10 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   no passive-interface Ethernet3
 ```
 </details>
 <details>
@@ -71,13 +81,15 @@ router ospf 1
 
 ```
 
-          interface Ethernet1
+interface Ethernet1
    description # DC01-LSW001 #
    speed forced 40gfull
    no switchport
    ip address 10.255.253.200/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet2
    description # DC01-LSW002 #
    speed forced 40gfull
@@ -85,6 +97,8 @@ interface Ethernet2
    ip address 10.255.253.202/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet3
    description # DC01-LSW003 #
    speed forced 40gfull
@@ -92,6 +106,8 @@ interface Ethernet3
    ip address 10.255.253.204/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Loopback0
    ip address 10.255.255.2/32
 
@@ -101,6 +117,10 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   no passive-interface Ethernet3
 ```
 </details>
 
@@ -118,6 +138,8 @@ interface Ethernet1
    ip address 10.255.253.101/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet2
    description # DC01-SSW002 #
    speed forced 40gfull
@@ -125,6 +147,8 @@ interface Ethernet2
    ip address 10.255.253.201/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Loopback0
    ip address 10.255.254.1/32
 
@@ -134,6 +158,9 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
 ```
 </details>
 
@@ -141,7 +168,7 @@ router ospf 1
 
 
 <details>
-<summary><b>SPINE 2:</b></summary>
+<summary><b>LEAF 2:</b></summary>
 
 ```
 interface Ethernet1
@@ -151,6 +178,8 @@ interface Ethernet1
    ip address 10.255.253.103/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet2
    description # DC01-SSW002 #
    speed forced 40gfull
@@ -158,6 +187,8 @@ interface Ethernet2
    ip address 10.255.253.203/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Loopback0
    ip address 10.255.254.2/32
 
@@ -168,6 +199,9 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
 ```
 </details>
 
@@ -175,7 +209,7 @@ router ospf 1
 
 
 <details>
-<summary><b>SPINE 3:</b></summary>
+<summary><b>LEAF 3:</b></summary>
 
 ```
 interface Ethernet1
@@ -185,6 +219,8 @@ interface Ethernet1
    ip address 10.255.253.105/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Ethernet2
    description # DC01-SSW002 #
    speed forced 40gfull
@@ -192,6 +228,8 @@ interface Ethernet2
    ip address 10.255.253.205/31
    arp aging timeout 300
    ip ospf network point-to-point
+   ip ospf authentication message-digest
+   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
 interface Loopback0
    ip address 10.255.254.3/32
 
@@ -202,10 +240,14 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
 ```
 </details>
 
-
+> [!TIP]
+> ### 📥 [Скачать файлы лабы в формате .zip](./configs/configs.zip?raw=true)
 [Файлы конфигурации](./configs/configs.zip).
 
 ### Проверка доступности:
