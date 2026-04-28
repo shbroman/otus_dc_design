@@ -32,8 +32,9 @@
 - 10.0.0.0/24 - сервисы
 
 ### Конфигурация:
+<details>
+<summary>- SPINE1:</summary>
 
-- SPINE1:
 ```
 interface Ethernet1
    description # DC01-LSW001 #
@@ -66,3 +67,4 @@ router ospf 1
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
 ```
+</details>
