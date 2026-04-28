@@ -247,7 +247,7 @@ router ospf 1
 </details>
 
 > [!TIP]
-> ### 📥 [Скачать файлы лабы в формате .zip](./configs/configs.zip?raw=true)
+> 📥 [Скачать файлы лабы в формате .zip](./configs/configs.zip)
 [Файлы конфигурации](./configs/configs.zip).
 
 ### Проверка доступности:
