@@ -217,7 +217,7 @@ router ospf 1
 <details>
 <summary><b>SPINE 1:</b></summary>
 
-
+```
 DC01-LSW001#show ip ospf neighbor
 Neighbor ID     Instance VRF      Pri State                  Dead Time   Addrese
 10.255.255.1    1        default  0   FULL                   00:00:33    10.2551
@@ -299,4 +299,5 @@ PING 10.255.255.2 (10.255.255.2) 72(100) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 111ms
 rtt min/avg/max/mdev = 9.102/23.236/38.156/11.252 ms, pipe 3, ipg/ewma 27.847/2s
 DC01-LSW001#
+```
 </details>
