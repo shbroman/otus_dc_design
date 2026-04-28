@@ -34,8 +34,7 @@
 ### Конфигурация:
 
 - SPINE1:
-`
-
+```
 interface Ethernet1
    description # DC01-LSW001 #
    speed forced 40gfull
@@ -66,4 +65,4 @@ router ospf 1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
-`
+```
