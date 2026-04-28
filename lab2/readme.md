@@ -33,7 +33,7 @@
 
 ### Конфигурация:
 <details>
-<summary><b>SPINE1 :</b></summary>
+<summary><b>SPINE 1:</b></summary>
 
 ```
 interface Ethernet1
@@ -68,3 +68,146 @@ router ospf 1
    max-lsa 12000
 ```
 </details>
+
+
+
+<details>
+<summary><b>SPINE 2:</b></summary>
+
+```
+
+          interface Ethernet1
+   description # DC01-LSW001 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.200/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Ethernet2
+   description # DC01-LSW002 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.202/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Ethernet3
+   description # DC01-LSW003 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.204/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Loopback0
+   ip address 10.255.255.2/32
+
+ip routing
+router ospf 1
+   router-id 10.255.255.2
+   auto-cost reference-bandwidth 1000000
+   network 10.252.0.0/14 area 0.0.0.0
+   max-lsa 12000
+```
+</details>
+
+
+
+<details>
+<summary><b>LEAF 1:</b></summary>
+
+```
+
+interface Ethernet1
+   description # DC01-SSW001 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.101/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Ethernet2
+   description # DC01-SSW002 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.201/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Loopback0
+   ip address 10.255.254.1/32
+
+ip routing
+router ospf 1
+   router-id 10.255.255.1
+   auto-cost reference-bandwidth 1000000
+   network 10.252.0.0/14 area 0.0.0.0
+   max-lsa 12000
+```
+</details>
+
+
+
+
+<details>
+<summary><b>SPINE 2:</b></summary>
+
+```
+interface Ethernet1
+   description # DC01-SSW001 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.103/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Ethernet2
+   description # DC01-SSW002 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.203/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Loopback0
+   ip address 10.255.254.2/32
+
+
+ip routing
+router ospf 1
+   router-id 10.255.255.1
+   auto-cost reference-bandwidth 1000000
+   network 10.252.0.0/14 area 0.0.0.0
+   max-lsa 12000
+```
+</details>
+
+
+
+
+<details>
+<summary><b>SPINE 3:</b></summary>
+
+```
+interface Ethernet1
+   description # DC01-SSW001 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.105/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Ethernet2
+   description # DC01-SSW002 #
+   speed forced 40gfull
+   no switchport
+   ip address 10.255.253.205/31
+   arp aging timeout 300
+   ip ospf network point-to-point
+interface Loopback0
+   ip address 10.255.254.3/32
+
+
+ip routing
+router ospf 1
+   router-id 10.255.255.1
+   auto-cost reference-bandwidth 1000000
+   network 10.252.0.0/14 area 0.0.0.0
+   max-lsa 12000
+```
+</details>
+
+
