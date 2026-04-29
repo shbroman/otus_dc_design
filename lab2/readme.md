@@ -154,7 +154,7 @@ interface Loopback0
 
 ip routing
 router ospf 1
-   router-id 10.255.255.1
+   router-id 10.255.254.1
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
@@ -195,7 +195,7 @@ interface Loopback0
 
 ip routing
 router ospf 1
-   router-id 10.255.255.1
+   router-id 10.255.254.2
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
@@ -236,7 +236,7 @@ interface Loopback0
 
 ip routing
 router ospf 1
-   router-id 10.255.255.1
+   router-id 10.255.254.3
    auto-cost reference-bandwidth 1000000
    network 10.252.0.0/14 area 0.0.0.0
    max-lsa 12000
@@ -256,10 +256,10 @@ router ospf 1
  - просмотр таблицы маршрутизации на каждом коммутаторе;
  - проверка связности посредством icmp echo request до каждого LEAF and SPINE.
 
-Под катом находится пример проверки, выполненной на SPINE 1. На остальных устройства проверки выполняются аналогично
+Под катом находится пример проверки, выполненной на LEAF 1. На остальных устройства проверки выполняются аналогично
 
 <details>
-<summary><b>SPINE 1:</b></summary>
+<summary><b>LEAF 1:</b></summary>
 
 ```
 DC01-LSW001#show ip ospf neighbor
