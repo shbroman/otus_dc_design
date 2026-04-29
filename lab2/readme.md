@@ -40,6 +40,8 @@ interface Ethernet1
    no switchport
    ip address 10.255.253.100/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -49,6 +51,8 @@ interface Ethernet2
    no switchport
    ip address 10.255.253.102/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -58,6 +62,8 @@ interface Ethernet3
    no switchport
    ip address 10.255.253.104/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -87,6 +93,8 @@ interface Ethernet1
    no switchport
    ip address 10.255.253.200/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -96,6 +104,8 @@ interface Ethernet2
    no switchport
    ip address 10.255.253.202/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -105,6 +115,8 @@ interface Ethernet3
    no switchport
    ip address 10.255.253.204/31
    arp aging timeout 300
+   bfd interval 100 min-rx 100 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -137,6 +149,8 @@ interface Ethernet1
    no switchport
    ip address 10.255.253.101/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -146,6 +160,8 @@ interface Ethernet2
    no switchport
    ip address 10.255.253.201/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -177,6 +193,8 @@ interface Ethernet1
    no switchport
    ip address 10.255.253.103/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -186,6 +204,8 @@ interface Ethernet2
    no switchport
    ip address 10.255.253.203/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -218,6 +238,8 @@ interface Ethernet1
    no switchport
    ip address 10.255.253.105/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -227,6 +249,8 @@ interface Ethernet2
    no switchport
    ip address 10.255.253.205/31
    arp aging timeout 300
+   bfd interval 1000 min-rx 1000 multiplier 3
+   ip ospf neighbor bfd
    ip ospf network point-to-point
    ip ospf authentication message-digest
    ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
@@ -262,11 +286,42 @@ router ospf 1
 <summary><b>LEAF 1:</b></summary>
 
 ```
-DC01-LSW001#show ip ospf neighbor
-Neighbor ID     Instance VRF      Pri State                  Dead Time   Addrese
-10.255.255.1    1        default  0   FULL                   00:00:33    10.2551
-10.255.255.2    1        default  0   FULL                   00:00:38    10.2552
-D
+
+show ip ospf database
+
+            OSPF Router with ID(10.255.254.1) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.255.255.2    10.255.255.2    529         0x8000001a   0x2fbc   7
+10.255.254.2    10.255.254.2    537         0x8000000c   0xe5dc   5
+10.255.254.3    10.255.254.3    531         0x8000000c   0x3186   5
+10.255.254.1    10.255.254.1    529         0x8000000c   0xaf1e   5
+10.255.255.1    10.255.255.1    918         0x80000008   0xb3a7   7
+
+
+DC01-LSW001# show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.255.255.2    1        default  0   FULL                   00:00:36    10.255.253.200  Ethernet2
+10.255.255.1    1        default  0   FULL                   00:00:37    10.255.253.100  Ethernet1
+
+DC01-LSW001#show bfd peers
+VRF name: default
+-----------------
+DstAddr            MyDisc   YourDisc Interface/Transport   Type         LastUp
+-------------- ---------- ---------- ------------------- ------ ---------------
+10.255.253.100 2209485441 4272456046       Ethernet1(14) normal 04/29/26 10:48
+10.255.253.200 2905977715 4206177367       Ethernet2(15) normal 04/29/26 11:01
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+
+
+
 DC01-LSW001#show ip route
 
 VRF: default
