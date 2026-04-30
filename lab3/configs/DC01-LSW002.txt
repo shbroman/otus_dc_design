@@ -1,4 +1,5 @@
 
+! Command: show running-config
 ! device: DC01-LSW002 (vEOS-lab, EOS-4.29.2F)
 !
 ! boot system flash:/vEOS-lab.swi
@@ -22,30 +23,24 @@ clock timezone Etc/GMT-3
 !
 interface Ethernet1
    description # DC01-SSW001 #
-   speed forced 40gfull
    no switchport
    ip address 10.255.253.103/31
    arp aging timeout 300
-   bfd interval 1000 min-rx 1000 multiplier 3
-   ip ospf neighbor bfd
-   ip ospf network point-to-point
-   ip ospf authentication message-digest
-   ip ospf authentication-key 7 ywNY2V3LPbnmR85VqJaKfg==
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
    isis enable dc01
+   isis bfd
    isis network point-to-point
 !
 interface Ethernet2
    description # DC01-SSW002 #
-   speed forced 40gfull
    no switchport
    ip address 10.255.253.203/31
    arp aging timeout 300
-   bfd interval 1000 min-rx 1000 multiplier 3
-   ip ospf neighbor bfd
-   ip ospf network point-to-point
-   ip ospf authentication message-digest
-   ip ospf authentication-key 7 CuLN1L9ii+Bw/X3oykPG5w==
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
    isis enable dc01
+   isis bfd
    isis network point-to-point
 !
 interface Ethernet3
