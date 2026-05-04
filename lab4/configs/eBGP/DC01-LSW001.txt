@@ -1,0 +1,183 @@
+! Command: show running-config
+! device: DC01-LSW001 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+cdp
+   receive
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+logging format timestamp traditional timezone
+!
+hostname DC01-LSW001
+!
+spanning-tree mode mstp
+!
+clock timezone Etc/GMT-3
+!
+interface Ethernet1
+   description # DC01-SSW001 #
+   no switchport
+   ip address 10.255.253.101/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
+!
+interface Ethernet2
+   description # DC01-SSW002 #
+   no switchport
+   ip address 10.255.253.201/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.255.254.1/32
+   isis enable dc01
+!
+interface Management1
+!
+ip routing
+!
+ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+!
+route-map from_connected_to_bgp permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map from_connected_to_bgp permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+router bgp 4200000001
+   router-id 10.255.254.1
+   timers bgp 3 9
+   maximum-paths 4 ecmp 4
+   neighbor leafs peer group
+   neighbor spines peer group
+   neighbor spines remote-as 64512
+   neighbor spines bfd
+   neighbor spines send-community extended
+   neighbor 10.255.253.100 peer group spines
+   neighbor 10.255.253.200 peer group spines
+   !
+   address-family ipv4
+      neighbor leafs activate
+      redistribute connected route-map from_connected_to_bgp
+!
+end
+DC01-LSW001#show ip bgp
+Bgp inactive
+DC01-LSW001#sh run
+! Command: show running-config
+! device: DC01-LSW001 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+cdp
+   receive
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+logging format timestamp traditional timezone
+!
+hostname DC01-LSW001
+!
+spanning-tree mode mstp
+!
+clock timezone Etc/GMT-3
+!
+interface Ethernet1
+   description # DC01-SSW001 #
+   no switchport
+   ip address 10.255.253.101/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
+!
+interface Ethernet2
+   description # DC01-SSW002 #
+   no switchport
+   ip address 10.255.253.201/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.255.254.1/32
+   isis enable dc01
+!
+interface Management1
+!
+ip routing
+!
+ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+!
+route-map from_connected_to_bgp permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map from_connected_to_bgp permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+router bgp 4200000001
+   router-id 10.255.254.1
+   timers bgp 3 9
+   maximum-paths 4 ecmp 4
+   neighbor leafs peer group
+   neighbor spines peer group
+   neighbor spines remote-as 64512
+   neighbor spines bfd
+   neighbor spines send-community extended
+   neighbor 10.255.253.100 peer group spines
+   neighbor 10.255.253.200 peer group spines
+   !
+   address-family ipv4
+      neighbor leafs activate
+      redistribute connected route-map from_connected_to_bgp
+!
+end
