@@ -311,6 +311,7 @@ router bgp 4200000003
 #### Конфигурация хостов:
 <details>
 <summary><b>SRV10-10:</b></summary>
+
 ```
 NAME   IP/MASK              GATEWAY           MAC                DNS
 VPCS1  10.0.10.10/24        10.0.10.1         00:50:79:66:68:29  10.1.0.2
@@ -318,6 +319,7 @@ VPCS1  10.0.10.10/24        10.0.10.1         00:50:79:66:68:29  10.1.0.2
 </details>
 <details>
 <summary><b>SRV10-30:</b></summary>
+
 ```
 NAME   IP/MASK              GATEWAY           MAC                DNS
 VPCS1  10.0.10.30/24        10.0.10.1         00:50:79:66:68:2b  10.1.0.10
@@ -325,6 +327,7 @@ VPCS1  10.0.10.30/24        10.0.10.1         00:50:79:66:68:2b  10.1.0.10
 </details>
 <details>
 <summary><b>SRV20-30:</b></summary>
+
 ```
 NAME   IP/MASK              GATEWAY           MAC                DNS
 VPCS1  10.0.20.30/24        10.0.20.1         00:50:79:66:68:38  10.0.1.10
