@@ -452,6 +452,7 @@ Total Mac Addresses for this criterion: 8
 
 Vlan    Mac Address       Type        Ports
 ----    -----------       ----        -----
+
 ```
 </details>
 
