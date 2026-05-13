@@ -461,6 +461,7 @@ Vlan    Mac Address       Type        Ports
 Под катом находится пример проверки, выполненной на SPINE 1. 
 <details>
 <summary><b>SPINE 1:</b></summary>
+
 ```
 DC01-SSW001#show bgp evpn
 BGP routing table information for VRF default
@@ -497,8 +498,6 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.254.103        -       100     0       4200000003 i
  * >      RD: 4200000003:4096 ip-prefix 10.0.20.0/24
                                  10.255.254.103        -       100     0       4200000003 i
-
-
 ```
 </details>
 
@@ -506,8 +505,8 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
 Проверка между хостами:
 <details>
 <summary><b>SRV10-10:</b></summary>
-```
 
+```
 VPCS> ping 10.0.10.1
 
 84 bytes from 10.0.10.1 icmp_seq=1 ttl=64 time=232.979 ms
@@ -522,7 +521,6 @@ VPCS> ping 10.0.20.30
 84 bytes from 10.0.20.30 icmp_seq=1 ttl=62 time=203.967 ms
 84 bytes from 10.0.20.30 icmp_seq=2 ttl=62 time=74.800 ms
 ^C
-
 
 ```
 </details>
