@@ -307,6 +307,7 @@ router bgp 4200000003
 !
 ```
 </details>
+
 #### Конфигурация хостов:
 <details>
 <summary><b>SRV10-10:</b></summary>
@@ -345,7 +346,6 @@ VPCS1  10.0.20.30/24        10.0.20.1         00:50:79:66:68:38  10.0.1.10
 <details>
 <summary><b>LEAF 1:</b></summary>
 ```
-
 DC01-LSW001#show bgp evpn
 BGP routing table information for VRF default
 Router identifier 10.255.254.1, local AS number 4200000001
