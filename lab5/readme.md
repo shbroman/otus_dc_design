@@ -342,9 +342,10 @@ VPCS1  10.0.20.30/24        10.0.20.1         00:50:79:66:68:38  10.0.1.10
  - просмотр таблицы маршрутизации на каждом коммутаторе;
  - проверка связности посредством icmp echo request.
 
-Под катом находится пример проверки, выполненной на LEAF 1. 
+Проверка на LEAF 1. 
 <details>
 <summary><b>LEAF 1:</b></summary>
+
 ```
 DC01-LSW001#show bgp evpn
 BGP routing table information for VRF default
@@ -451,7 +452,6 @@ Total Mac Addresses for this criterion: 8
 
 Vlan    Mac Address       Type        Ports
 ----    -----------       ----        -----
-
 ```
 </details>
 
