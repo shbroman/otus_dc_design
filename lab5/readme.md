@@ -19,9 +19,9 @@
 Для создания тестовой среды использованы:
 - ПО Pnetlab для создания виртуального стенда;
 - коммутатор Arista ver. 4.29.2F в роли SPINE в количестве 2 шт (DC01-SSW01-02);
-- коммутатор Arista ver. 4.29.2F в роли LEAF в количестве 3 шт (DC01-SSW01-03);
-- коммутатор стороннего вендора в роли LEAF в количестве 1 шт (DC01-SSW01-04);
-- коммутатор стороннего вендора в роли LEAF в количестве 3 шт (DC01-SSW01-05).
+- коммутатор Arista ver. 4.29.2F в роли LEAF в количестве 3 шт (DC01-LSW01-03);
+- коммутатор стороннего вендора в роли LEAF в количестве 1 шт (DC01-LSW01-04);
+- коммутатор стороннего вендора в роли LEAF в количестве 3 шт (DC01-LSW01-05).
 
 Подключение было выполнено согласно прилагаемой схеме:
 
@@ -180,11 +180,11 @@ vlan 10,20
 vrf instance PROD
 !
 interface Loopback0
-   ip address 10.255.254.1/32
+   ip address 10.255.254.2/32
    isis enable dc01
 !
 interface Loopback10
-   ip address 10.255.254.101/32
+   ip address 10.255.254.102/32
 !
 interface Vlan10
    vrf PROD
@@ -249,15 +249,19 @@ vlan 10,20
 vrf instance PROD
 !
 interface Loopback0
-   ip address 10.255.254.1/32
+   ip address 10.255.254.3/32
    isis enable dc01
 !
 interface Loopback10
-   ip address 10.255.254.101/32
+   ip address 10.255.254.103/32
 !
 interface Vlan10
    vrf PROD
    ip address virtual 10.0.10.1/24
+!
+interface Vlan20
+   vrf PROD
+   ip address 10.0.20.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback10
