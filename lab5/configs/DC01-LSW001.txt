@@ -23,8 +23,6 @@ clock timezone Etc/GMT-3
 !
 vlan 10,20
 !
-vrf instance PROD
-!
 interface Ethernet1
    description # DC01-SSW001 #
    no switchport
@@ -70,10 +68,6 @@ interface Loopback10
 !
 interface Management1
 !
-interface Vlan10
-   vrf PROD
-   ip address virtual 10.0.10.1/24
-!
 interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
@@ -84,7 +78,6 @@ interface Vxlan1
 ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
-ip routing vrf PROD
 !
 ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
@@ -118,11 +111,5 @@ router bgp 4200000001
    address-family ipv4
       neighbor spines activate
       redistribute connected route-map from_connected_to_bgp
-   !
-   vrf PROD
-      rd 4200000001:4096
-      route-target import evpn 64512:4096
-      route-target export evpn 64512:4096
-      redistribute connected
 !
 end

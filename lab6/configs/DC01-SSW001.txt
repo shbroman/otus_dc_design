@@ -1,5 +1,6 @@
+
 ! Command: show running-config
-! device: DC01-SSW002 (vEOS-lab, EOS-4.29.2F)
+! device: DC01-SSW001 (vEOS-lab, EOS-4.29.2F)
 !
 ! boot system flash:/vEOS-lab.swi
 !
@@ -14,7 +15,7 @@ service routing protocols model multi-agent
 !
 logging format timestamp traditional timezone
 !
-hostname DC01-SSW002
+hostname DC01-SSW001
 !
 spanning-tree mode mstp
 !
@@ -23,7 +24,7 @@ clock timezone Etc/GMT-3
 interface Ethernet1
    description # DC01-LSW001 #
    no switchport
-   ip address 10.255.253.200/31
+   ip address 10.255.253.100/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
    no ip ospf neighbor bfd
@@ -34,7 +35,7 @@ interface Ethernet1
 interface Ethernet2
    description # DC01-LSW002 #
    no switchport
-   ip address 10.255.253.202/31
+   ip address 10.255.253.102/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
    no ip ospf neighbor bfd
@@ -45,7 +46,7 @@ interface Ethernet2
 interface Ethernet3
    description # DC01-LSW003 #
    no switchport
-   ip address 10.255.253.204/31
+   ip address 10.255.253.104/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
    no ip ospf neighbor bfd
@@ -56,6 +57,12 @@ interface Ethernet3
 interface Ethernet4
 !
 interface Ethernet5
+   description # DC01-LSW005 #
+   no switchport
+   ip address 10.255.253.108/31
+   arp aging timeout 300
+   no ip ospf neighbor bfd
+   no isis bfd
 !
 interface Ethernet6
 !
@@ -64,7 +71,7 @@ interface Ethernet7
 interface Ethernet8
 !
 interface Loopback0
-   ip address 10.255.255.2/32
+   ip address 10.255.255.1/32
    isis enable dc01
 !
 interface Management1
@@ -84,7 +91,7 @@ peer-filter pf_leafs
    10 match as-range 4200000001-4200000255 result accept
 !
 router bgp 64512
-   router-id 10.255.255.2
+   router-id 10.255.255.1
    timers bgp 3 9
    maximum-paths 4 ecmp 4
    bgp listen range 10.255.253.0/24 peer-group dyn_leafs peer-filter pf_leafs
@@ -93,8 +100,8 @@ router bgp 64512
    neighbor dyn_leafs send-community extended
    !
    vlan-aware-bundle VLAN-AWARE
-      rd 64512:2
-      route-target both 64512:2
+      rd 64512:1
+      route-target both 64512:1
       redistribute learned
       vlan 10,20
    !

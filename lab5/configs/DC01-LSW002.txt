@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC01-LSW002 (vEOS-lab, EOS-4.29.2F)
 !
@@ -93,7 +92,6 @@ route-map from_connected_to_bgp permit 10
 route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
-
 router bgp 4200000002
    router-id 10.255.254.2
    timers bgp 3 9
@@ -106,7 +104,7 @@ router bgp 4200000002
    neighbor 10.255.253.202 peer group spines
    !
    vlan-aware-bundle VLAN-AWARE
-      rd 4200000002:1
+      rd 4200000001:1
       route-target both 64512:1
       redistribute learned
       vlan 10,20
@@ -117,11 +115,6 @@ router bgp 4200000002
    address-family ipv4
       neighbor spines activate
       redistribute connected route-map from_connected_to_bgp
-   !
-   vrf PROD
-      rd 4200000002:4096
-      route-target import evpn 64512:4096
-      route-target export evpn 64512:4096
-      redistribute connected
 !
 end
+

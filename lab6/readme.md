@@ -37,7 +37,7 @@
 - AS4200000XXX - номера автономных систем для LEAF'ов, где XXX - соотвествует номеру LEAF'а с добавлением нулей в начале
 - Хосты имеют именя SRVXX-YZ, где XX - номер VLAN из дипазона 01-99, Y - номер LEAF, Z - порядковый номер, начиная с 0. IP-адрес хоста при этом будет в формате 10.0.XX.YZ/24.
 - Используем схему VLAN-AWARE, RT 64512:1 (ASN SPINE:1)
-- VNI в формате XXYYYY, где XX - номер ЦОД, YYYY - номер VLAN.
+- VNI в формате XXYYYY, где XX - номер ЦОД, YYYY - номер VLAN. Для L3 используем YYYY 4096.
 
 Коммутатор DC01-LSW04 работает на ROS v7, DC01-LSW05 на NX-OS. Настроить в такой топологии с Arista VeOS не получилось.
 
@@ -109,6 +109,7 @@ router bgp 64512
 ```
 vlan 10,20
 !
+vrf instance PROD
 !
 interface Loopback0
    ip address 10.255.254.1/32
@@ -117,14 +118,21 @@ interface Loopback0
 interface Loopback10
    ip address 10.255.254.101/32
 !
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.0.10.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
+!
+ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
+ip routing vrf PROD
 !
 router bgp 4200000001
    router-id 10.255.254.1
@@ -150,10 +158,17 @@ router bgp 4200000001
       neighbor spines activate
       redistribute connected route-map from_connected_to_bgp
    !
+   vrf PROD
+      rd 4200000001:4096
+      route-target import evpn 64512:4096
+      route-target export evpn 64512:4096
+      redistribute connected
 !
 
 ```
 </details>
+
+
 
 
 <details>
@@ -162,7 +177,8 @@ router bgp 4200000001
 ```
 
 vlan 10,20
-
+!
+vrf instance PROD
 !
 interface Loopback0
    ip address 10.255.254.2/32
@@ -171,15 +187,21 @@ interface Loopback0
 interface Loopback10
    ip address 10.255.254.102/32
 !
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.0.10.1/24
+!
 interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
+ip routing vrf PROD
 !
 router bgp 4200000002
    router-id 10.255.254.2
@@ -205,7 +227,14 @@ router bgp 4200000002
       neighbor spines activate
       redistribute connected route-map from_connected_to_bgp
    !
+   vrf PROD
+      rd 4200000002:4096
+      route-target import evpn 64512:4096
+      route-target export evpn 64512:4096
+      redistribute connected
 !
+
+
 
 ```
 </details>
@@ -218,7 +247,7 @@ router bgp 4200000002
 ```
 vlan 10,20
 !
-
+vrf instance PROD
 !
 interface Loopback0
    ip address 10.255.254.3/32
@@ -227,17 +256,25 @@ interface Loopback0
 interface Loopback10
    ip address 10.255.254.103/32
 !
-
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.0.10.1/24
+!
+interface Vlan20
+   vrf PROD
+   ip address 10.0.20.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
+ip routing vrf PROD
 !
 router bgp 4200000003
    router-id 10.255.254.3
@@ -263,6 +300,11 @@ router bgp 4200000003
       neighbor spines activate
       redistribute connected route-map from_connected_to_bgp
    !
+   vrf PROD
+      rd 4200000003:4096
+      route-target import evpn 64512:4096
+      route-target export evpn 64512:4096
+      redistribute connected
 !
 ```
 </details>
