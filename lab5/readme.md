@@ -303,7 +303,7 @@ VPCS1  10.0.20.30/24        10.0.20.1         00:50:79:66:68:38  10.0.1.10
  - просмотр таблицы маршрутизации на каждом коммутаторе;
  - проверка связности посредством icmp echo request.
 
-Проверка на LEAF 1. 
+Проверка на LEAF 1:
 <details>
 <summary><b>LEAF 1:</b></summary>
 
@@ -419,7 +419,7 @@ Vlan    Mac Address       Type        Ports
 
 
 
-Под катом находится пример проверки, выполненной на SPINE 1. 
+Проверка на SPINE 1:
 <details>
 <summary><b>SPINE 1:</b></summary>
 
@@ -463,7 +463,7 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
 </details>
 
 
-Проверка между хостами:
+Проверка на хостах:
 <details>
 <summary><b>SRV10-10:</b></summary>
 
