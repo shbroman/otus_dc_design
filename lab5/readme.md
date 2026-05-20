@@ -308,57 +308,39 @@ VPCS1  10.0.20.30/24        10.0.20.1         00:50:79:66:68:38  10.0.1.10
 <summary><b>LEAF 1:</b></summary>
 
 ```
+
 DC01-LSW001#show bgp evpn
 BGP routing table information for VRF default
 Router identifier 10.255.254.1, local AS number 4200000001
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
                     c - Contributing to ECMP, % - Pending BGP convergence
 Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Lp
 
-          Network                Next Hop              Metric  LocPref Weight  Path
+          Network                Next Hop              Metric  LocPref Weight  h
  * >      RD: 4200000001:1 mac-ip 10010 0050.7966.6829
                                  -                     -       -       0       i
- * >      RD: 4200000001:1 mac-ip 10010 0050.7966.6829 10.0.10.10
-                                 -                     -       -       0       i
  * >Ec    RD: 4200000003:1 mac-ip 10010 0050.7966.682b
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
  *  ec    RD: 4200000003:1 mac-ip 10010 0050.7966.682b
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 4200000003:1 mac-ip 10010 0050.7966.682b 10.0.10.30
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:1 mac-ip 10010 0050.7966.682b 10.0.10.30
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 4200000003:1 mac-ip 10020 0050.7966.6838
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:1 mac-ip 10020 0050.7966.6838
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 4200000003:1 mac-ip 10020 0050.7966.6838 10.0.20.30
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:1 mac-ip 10020 0050.7966.6838 10.0.20.30
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
+ * >Ec    RD: 4200000003:1 mac-ip 10020 6a65.7561.1128
+                                 10.255.254.103        -       100     0       i
+ *  ec    RD: 4200000003:1 mac-ip 10020 6a65.7561.1128
+                                 10.255.254.103        -       100     0       i
  * >      RD: 4200000001:1 imet 10010 10.255.254.101
                                  -                     -       -       0       i
  * >Ec    RD: 4200000003:1 imet 10010 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
  *  ec    RD: 4200000003:1 imet 10010 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
  * >      RD: 4200000001:1 imet 10020 10.255.254.101
                                  -                     -       -       0       i
  * >Ec    RD: 4200000003:1 imet 10020 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
  *  ec    RD: 4200000003:1 imet 10020 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 4200000001:4096 ip-prefix 10.0.10.0/24
-                                 -                     -       -       0       i
- * >Ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
-                                 10.255.254.103        -       100     0       64512 4200000003 i
+                                 10.255.254.103        -       100     0       i
+
 
 
 DC01-LSW001#show vxlan vni 10010
@@ -372,25 +354,6 @@ VNI to dynamic VLAN Mapping for Vxlan1
 VNI       VLAN       VRF       Source
 --------- ---------- --------- ------------
 
-DC01-LSW001#show vxlan vni 10020
-VNI to VLAN Mapping for Vxlan1
-VNI         VLAN       Source       Interface       802.1Q Tag
------------ ---------- ------------ --------------- ----------
-10020       20         static       Vxlan1          20
-
-VNI to dynamic VLAN Mapping for Vxlan1
-VNI       VLAN       VRF       Source
---------- ---------- --------- ------------
-
-DC01-LSW001#show vxlan vni 14096
-VNI to VLAN Mapping for Vxlan1
-VNI       VLAN       Source       Interface       802.1Q Tag
---------- ---------- ------------ --------------- ----------
-
-VNI to dynamic VLAN Mapping for Vxlan1
-VNI         VLAN       VRF        Source
------------ ---------- ---------- ------------
-14096       4093       PROD       evpn
 
 DC01-LSW001#show mac address-table
           Mac Address Table
@@ -400,19 +363,14 @@ Vlan    Mac Address       Type        Ports      Moves   Last Move
 ----    -----------       ----        -----      -----   ---------
    1    0000.0000.0001    STATIC      Cpu
   10    0000.0000.0001    STATIC      Cpu
-  10    0050.7966.6829    DYNAMIC     Et4        1       0:04:41 ago
-  10    0050.7966.682b    DYNAMIC     Vx1        1       0:04:44 ago
+  10    0050.7966.6829    DYNAMIC     Et4        1       0:01:31 ago
+  10    0050.7966.682b    DYNAMIC     Vx1        1       0:01:30 ago
   20    0000.0000.0001    STATIC      Cpu
-  20    0050.7966.6838    DYNAMIC     Vx1        1       0:04:21 ago
-4093    0000.0000.0001    STATIC      Cpu
-4093    505a.5203.e5a1    DYNAMIC     Vx1        1       2:54:44 ago
-Total Mac Addresses for this criterion: 8
+  20    6a65.7561.1128    DYNAMIC     Vx1        1       0:01:32 ago
+4094    0000.0000.0001    STATIC      Cpu
+Total Mac Addresses for this criterion: 7
 
-          Multicast Mac Address Table
-------------------------------------------------------------------
 
-Vlan    Mac Address       Type        Ports
-----    -----------       ----        -----
 
 ```
 </details>
@@ -424,6 +382,8 @@ Vlan    Mac Address       Type        Ports
 <summary><b>SPINE 1:</b></summary>
 
 ```
+
+
 DC01-SSW001#show bgp evpn
 BGP routing table information for VRF default
 Router identifier 10.255.255.1, local AS number 64512
@@ -435,15 +395,9 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
           Network                Next Hop              Metric  LocPref Weight  Path
  * >      RD: 4200000001:1 mac-ip 10010 0050.7966.6829
                                  10.255.254.101        -       100     0       4200000001 i
- * >      RD: 4200000001:1 mac-ip 10010 0050.7966.6829 10.0.10.10
-                                 10.255.254.101        -       100     0       4200000001 i
  * >      RD: 4200000003:1 mac-ip 10010 0050.7966.682b
                                  10.255.254.103        -       100     0       4200000003 i
- * >      RD: 4200000003:1 mac-ip 10010 0050.7966.682b 10.0.10.30
-                                 10.255.254.103        -       100     0       4200000003 i
- * >      RD: 4200000003:1 mac-ip 10020 0050.7966.6838
-                                 10.255.254.103        -       100     0       4200000003 i
- * >      RD: 4200000003:1 mac-ip 10020 0050.7966.6838 10.0.20.30
+ * >      RD: 4200000003:1 mac-ip 10020 6a65.7561.1128
                                  10.255.254.103        -       100     0       4200000003 i
  * >      RD: 4200000001:1 imet 10010 10.255.254.101
                                  10.255.254.101        -       100     0       4200000001 i
@@ -453,12 +407,14 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.254.101        -       100     0       4200000001 i
  * >      RD: 4200000003:1 imet 10020 10.255.254.103
                                  10.255.254.103        -       100     0       4200000003 i
- * >      RD: 4200000001:4096 ip-prefix 10.0.10.0/24
-                                 10.255.254.101        -       100     0       4200000001 i
- * >      RD: 4200000003:4096 ip-prefix 10.0.10.0/24
-                                 10.255.254.103        -       100     0       4200000003 i
- * >      RD: 4200000003:4096 ip-prefix 10.0.20.0/24
-                                 10.255.254.103        -       100     0       4200000003 i
+DC01-SSW001# sh vlan
+VLAN  Name                             Status    Ports
+----- -------------------------------- --------- -------------------------------
+1     default                          active    Et4, Et6, Et7, Et8
+
+
+
+
 ```
 </details>
 
