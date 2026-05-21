@@ -357,8 +357,8 @@ router bgp 4200000003
       redistribute connected route-map from_connected_to_bgp
    !
 !
-
 ```
+
 
 </details>
 
@@ -489,7 +489,6 @@ config firewall policy
         set service "ALL"
     next
 end
-
 ```
 
 </details>
