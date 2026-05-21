@@ -363,6 +363,8 @@ router bgp 4200000003
 
 <details>
 <summary><b>МСЭ:</b></summary>
+
+```
 FortiGate-VM64-KVM # show system interface
 config system interface
     edit "port1"
@@ -485,7 +487,7 @@ config firewall policy
         set service "ALL"
     next
 end
-
+```
 
 </details>
 
