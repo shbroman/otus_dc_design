@@ -303,7 +303,6 @@ router bgp 4200000002
 
 </details>
 
-
 <details>
 <summary><b>LEAF 3:</b></summary>
 
