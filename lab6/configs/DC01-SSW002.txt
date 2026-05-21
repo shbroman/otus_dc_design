@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC01-SSW002 (vEOS-lab, EOS-4.29.2F)
 !
@@ -92,12 +91,6 @@ router bgp 64512
    neighbor dyn_leafs peer group
    neighbor dyn_leafs bfd
    neighbor dyn_leafs send-community extended
-   !
-   vlan-aware-bundle VLAN-AWARE
-      rd 64512:2
-      route-target both 64512:2
-      redistribute learned
-      vlan 10,20
    !
    address-family evpn
       neighbor dyn_leafs activate

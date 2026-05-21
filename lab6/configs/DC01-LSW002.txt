@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC01-LSW002 (vEOS-lab, EOS-4.29.2F)
 !
@@ -22,6 +21,8 @@ spanning-tree mode mstp
 clock timezone Etc/GMT-3
 !
 vlan 10,20
+!
+vrf instance PROD
 !
 interface Ethernet1
    description # DC01-SSW001 #
@@ -60,6 +61,8 @@ interface Ethernet3
    isis network point-to-point
 !
 interface Ethernet4
+   switchport access vlan 10
+   spanning-tree portfast
 !
 interface Ethernet5
 !
@@ -68,12 +71,23 @@ interface Ethernet6
 interface Ethernet7
 !
 interface Ethernet8
+   no switchport
+   vrf PROD
+   ip address 10.1.2.1/30
 !
 interface Loopback0
    ip address 10.255.254.2/32
    isis enable dc01
 !
+interface Loopback10
+   ip address 10.255.254.102/32
+!
 interface Management1
+!
+interface Vlan10
+   no autostate
+   vrf PROD
+   ip address virtual 10.0.10.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback10
@@ -82,10 +96,28 @@ interface Vxlan1
    vxlan vlan 20 vni 10020
    vxlan vrf PROD vni 14096
 !
-ip routing
+ip virtual-router mac-address 00:00:00:00:00:01
 !
-ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
-ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+ip routing
+ip routing vrf PROD
+!
+ip prefix-list AS65000_out
+   seq 10 permit 10.0.0.0/8
+!
+ip prefix-list prf_loopback_leafs
+   seq 10 permit 10.255.254.0/24 le 32
+!
+ip prefix-list prf_loopback_spines
+   seq 10 permit 10.255.255.0/24 le 32
+!
+ip prefix-list rfc1918
+   seq 10 permit 10.0.0.0/8 le 32
+   seq 20 permit 172.16.0.0/12 le 32
+   seq 40 permit 192.168.0.0/16 le 32
+!
+route-map AS65000_out permit 10
+   match ip address prefix-list AS65000_out
+   set community 65000:100 additive
 !
 route-map from_connected_to_bgp permit 10
    match ip address prefix-list prf_loopback_leafs
@@ -93,7 +125,6 @@ route-map from_connected_to_bgp permit 10
 route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
-
 router bgp 4200000002
    router-id 10.255.254.2
    timers bgp 3 9
@@ -106,7 +137,7 @@ router bgp 4200000002
    neighbor 10.255.253.202 peer group spines
    !
    vlan-aware-bundle VLAN-AWARE
-      rd 4200000002:1
+      rd 4200000001:1
       route-target both 64512:1
       redistribute learned
       vlan 10,20
@@ -122,6 +153,9 @@ router bgp 4200000002
       rd 4200000002:4096
       route-target import evpn 64512:4096
       route-target export evpn 64512:4096
-      redistribute connected
+      neighbor 10.1.2.2 remote-as 65000
+      neighbor 10.1.2.2 route-map AS65000_out out
+      neighbor 10.1.2.2 send-community standard
+      aggregate-address 10.0.0.0/8 advertise-only
 !
 end
