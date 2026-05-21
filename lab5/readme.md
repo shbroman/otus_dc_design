@@ -308,6 +308,7 @@ router bgp 4200000002
 <summary><b>LEAF 3:</b></summary>
 
 ```
+
 vlan 10,20
 !
 vrf instance PROD
@@ -356,11 +357,10 @@ router bgp 4200000003
       redistribute connected route-map from_connected_to_bgp
    !
 !
+
 ```
 
 </details>
-
-
 
 
 <details>
@@ -489,6 +489,7 @@ config firewall policy
         set service "ALL"
     next
 end
+
 ```
 
 </details>
