@@ -742,6 +742,59 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
 ```
 </details>
 
+Проверка на МСЭ:
+<details>
+<summary><b>DC01-FW01:</b></summary>
+
+```
+DC01-FW01 # get router info routing-table all
+Codes: K - kernel, C - connected, S - static, R - RIP, B - BGP
+       O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       V - BGP VPNv4
+       * - candidate default
+
+Routing table for VRF=0
+S*      0.0.0.0/0 [250/0] is a summary, Null, [1/0]
+C       8.8.8.8/32 is directly connected, loopback0
+B       10.0.0.0/8 [20/0] via 10.1.2.1 (recursive is directly connected, port1), 01:48:45, [1/0]
+C       10.1.2.0/30 is directly connected, port1
+
+
+DC01-FW01 # get router info bgp summary
+
+VRF 0 BGP router identifier 8.8.8.8, local AS number 65000
+BGP table version is 1
+2 BGP AS-PATH entries
+1 BGP community entries
+
+Neighbor V         AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.1.2.1 4 4200000002    2555    2459        1    0    0 01:48:58        1
+
+Total number of neighbors 1
+
+
+DC01-FW01 # get router info bgp network
+VRF 0 BGP table version is 1, local router ID is 8.8.8.8
+Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+              S Stale
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric     LocPrf Weight RouteTag Path
+*> 0.0.0.0/0        0.0.0.0                            32768        0 ? <-/1>
+*> 8.8.8.8/32       0.0.0.0                       100  32768        0 i <-/1>
+*> 10.0.0.0         10.1.2.1        0                      0        0 4200000002 64512 i <-/1>
+
+Total number of prefixes 3
+
+
+
+
+```
+</details>
+
 
 Проверка на хостах:
 <details>
