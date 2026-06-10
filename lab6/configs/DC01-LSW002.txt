@@ -30,10 +30,6 @@ interface Ethernet1
    ip address 10.255.253.103/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
-   no ip ospf neighbor bfd
-   isis enable dc01
-   isis bfd
-   isis network point-to-point
 !
 interface Ethernet2
    description # DC01-SSW002 #
@@ -41,10 +37,6 @@ interface Ethernet2
    ip address 10.255.253.203/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
-   no ip ospf neighbor bfd
-   isis enable dc01
-   isis bfd
-   isis network point-to-point
 !
 interface Ethernet3
    description # DC01-LSW003 #
@@ -94,7 +86,6 @@ interface Vxlan1
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
-   vxlan vrf PROD vni 14096
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
@@ -133,6 +124,7 @@ router bgp 4200000002
    neighbor spines remote-as 64512
    neighbor spines bfd
    neighbor spines send-community extended
+   neighbor 10.1.2.2 remote-as 65000
    neighbor 10.255.253.102 peer group spines
    neighbor 10.255.253.202 peer group spines
    !
@@ -147,6 +139,7 @@ router bgp 4200000002
    !
    address-family ipv4
       neighbor spines activate
+      neighbor 10.1.2.2 activate
       redistribute connected route-map from_connected_to_bgp
    !
    vrf PROD

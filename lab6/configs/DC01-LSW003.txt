@@ -20,6 +20,7 @@ clock timezone Etc/GMT-3
 vlan 10,20
 !
 vrf instance PROD
+   rd 4200000003:14096
 !
 interface Ethernet1
    description # DC01-SSW001 #
@@ -27,10 +28,6 @@ interface Ethernet1
    ip address 10.255.253.105/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
-   no ip ospf neighbor bfd
-   isis enable dc01
-   isis bfd
-   isis network point-to-point
 !
 interface Ethernet2
    description # DC01-SSW002 #
@@ -38,10 +35,6 @@ interface Ethernet2
    ip address 10.255.253.205/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
-   no ip ospf neighbor bfd
-   isis enable dc01
-   isis bfd
-   isis network point-to-point
 !
 interface Ethernet3
 !
@@ -80,7 +73,6 @@ interface Vxlan1
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
-   vxlan vrf PROD vni 14096
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
@@ -107,11 +99,16 @@ router bgp 4200000003
    neighbor 10.255.253.104 peer group spines
    neighbor 10.255.253.204 peer group spines
    !
-   vlan-aware-bundle VLAN-AWARE
-      rd 4200000003:1
-      route-target both 64512:1
+   vlan 10
+      rd 4200000003:10010
+      route-target import 64512:10
+      route-target export 64512:10
       redistribute learned
-      vlan 10,20
+   !
+   vlan 20
+      rd 4200000003:10020
+      route-target both 64512:20
+      redistribute learned
    !
    address-family evpn
       neighbor spines activate

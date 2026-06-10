@@ -1,12 +1,9 @@
 ! Command: show running-config
-! device: DC01-LSW001 (vEOS-lab, EOS-4.29.2F)
+! device: DC01-LSW003 (vEOS-lab, EOS-4.29.2F)
 !
 ! boot system flash:/vEOS-lab.swi
 !
 no aaa root
-!
-cdp
-   receive
 !
 transceiver qsfp default-mode 4x10G
 !
@@ -14,7 +11,7 @@ service routing protocols model multi-agent
 !
 logging format timestamp traditional timezone
 !
-hostname DC01-LSW001
+hostname DC01-LSW003
 !
 spanning-tree mode mstp
 !
@@ -23,27 +20,33 @@ clock timezone Etc/GMT-3
 vlan 10,20
 !
 vrf instance PROD
-   rd 4200000001:14096
 !
 interface Ethernet1
    description # DC01-SSW001 #
    no switchport
-   ip address 10.255.253.101/31
+   ip address 10.255.253.105/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
 !
 interface Ethernet2
    description # DC01-SSW002 #
    no switchport
-   ip address 10.255.253.201/31
+   ip address 10.255.253.205/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
+   no ip ospf neighbor bfd
+   isis enable dc01
+   isis bfd
+   isis network point-to-point
 !
 interface Ethernet3
 !
 interface Ethernet4
    switchport access vlan 10
-   spanning-tree portfast
 !
 interface Ethernet5
    switchport access vlan 10
@@ -56,17 +59,17 @@ interface Ethernet7
 interface Ethernet8
 !
 interface Loopback0
-   ip address 10.255.254.1/32
+   ip address 10.255.254.3/32
    isis enable dc01
 !
 interface Loopback10
-   ip address 10.255.254.101/32
+   ip address 10.255.254.103/32
 !
 interface Management1
 !
 interface Vlan10
    vrf PROD
-   ip address virtual 10.0.10.1/24
+   ip address 10.0.10.1/24
 !
 interface Vlan20
    vrf PROD
@@ -77,6 +80,7 @@ interface Vxlan1
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
@@ -92,27 +96,22 @@ route-map from_connected_to_bgp permit 10
 route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
-router bgp 4200000001
-   router-id 10.255.254.1
+router bgp 4200000003
+   router-id 10.255.254.3
    timers bgp 3 9
    maximum-paths 4 ecmp 4
    neighbor spines peer group
    neighbor spines remote-as 64512
    neighbor spines bfd
    neighbor spines send-community extended
-   neighbor 10.255.253.100 peer group spines
-   neighbor 10.255.253.200 peer group spines
+   neighbor 10.255.253.104 peer group spines
+   neighbor 10.255.253.204 peer group spines
    !
-   vlan 10
-      rd 4200000001:10010
-      route-target import 64512:10
-      route-target export 64512:10
+   vlan-aware-bundle VLAN-AWARE
+      rd 4200000003:1
+      route-target both 64512:1
       redistribute learned
-   !
-   vlan 20
-      rd 4200000001:10020
-      route-target both 64512:20
-      redistribute learned
+      vlan 10,20
    !
    address-family evpn
       neighbor spines activate
@@ -122,7 +121,7 @@ router bgp 4200000001
       redistribute connected route-map from_connected_to_bgp
    !
    vrf PROD
-      rd 4200000001:4096
+      rd 4200000003:4096
       route-target import evpn 64512:4096
       route-target export evpn 64512:4096
       redistribute connected

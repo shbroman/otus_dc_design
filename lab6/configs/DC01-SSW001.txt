@@ -1,3 +1,4 @@
+
 ! Command: show running-config
 ! device: DC01-SSW001 (vEOS-lab, EOS-4.29.2F)
 !
@@ -60,8 +61,7 @@ interface Ethernet5
    no switchport
    ip address 10.255.253.108/31
    arp aging timeout 300
-   no ip ospf neighbor bfd
-   no isis bfd
+   bfd interval 999 min-rx 999 multiplier 5
 !
 interface Ethernet6
 !
@@ -97,12 +97,15 @@ router bgp 64512
    neighbor dyn_leafs peer group
    neighbor dyn_leafs bfd
    neighbor dyn_leafs send-community extended
+   neighbor 10.255.253.109 remote-as 4200000005
    !
    address-family evpn
       neighbor dyn_leafs activate
+      neighbor 10.255.253.109 activate
    !
    address-family ipv4
       neighbor dyn_leafs activate
+      neighbor 10.255.253.109 activate
       redistribute connected route-map from_connected_to_bgp
 !
 end

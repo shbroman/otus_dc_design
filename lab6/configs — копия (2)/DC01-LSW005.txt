@@ -1,0 +1,293 @@
+!Command: show running-config
+!Running configuration last done at: Mon May 25 17:58:41 2026
+!Time: Mon May 25 17:59:31 2026
+
+version 10.5(2) Bios:version
+hostname DC01-LSW005
+vdc DC01-LSW005 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature bgp
+feature interface-vlan
+feature vn-segment-vlan-based
+feature lldp
+feature bfd
+clock timezone MSK 3 0
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$HCFBPD$HZxwyA.NVjOSoiAW1TCzxSE4LugFwXCjHfjPKqsFkr7
+ role network-admin
+ip domain-lookup
+copp profile strict
+hardware access-list tcam region racl 1024
+hardware access-list tcam region arp-ether 256
+snmp-server user admin network-admin auth md5 0044783C3D43A6A4E1D70233127B5E6AA6
+1A priv aes-128 055E540D2B9F7237707A9FA8D8A2929D54A1 localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 0000.0000.0001
+vlan 1,10,20,30,50,999
+vlan 10
+  vn-segment 10010
+vlan 20
+  vn-segment 10020
+vlan 30
+  vn-segment 10030
+vlan 50
+  vn-segment 10050
+vlan 999
+  name Transit-L3-vrf-PROD
+  vn-segment 14096
+
+ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+route-map from_connected_to_bgp permit 10
+  match ip address prefix-list prf_loopback_leafs
+route-map from_connected_to_bgp permit 20
+  match ip address prefix-list prf_loopback_spines
+vrf context PROD
+  vni 14096
+  rd auto
+  address-family ipv4 unicast
+    route-target import 64512:14096
+    route-target import 64512:14096 evpn
+    route-target import 64512:4096
+    route-target import 64512:4096 evpn
+    route-target export 64512:14096
+    route-target export 64512:14096 evpn
+    route-target export 64512:4096
+    route-target export 64512:4096 evpn
+vrf context management
+
+
+interface Vlan1
+
+interface Vlan10
+  vrf member PROD
+  ip address 10.0.10.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan20
+  vrf member PROD
+  ip address 10.0.20.1/24
+
+interface Vlan999
+  no shutdown
+  vrf member PROD
+  ip forward
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback10
+  member vni 10010
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10020-10050
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 14096 associate-vrf
+
+interface Ethernet1/1
+  description # DC01-SSW001 #
+  no switchport
+  no ip redirects
+  ip address 10.255.253.109/31
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/2
+  description # DC01-SSW002 #
+  no switchport
+  no ip redirects
+  ip address 10.255.253.209/31
+  ip arp timeout 300
+
+interface Ethernet1/3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+  switchport access vlan 10
+  spanning-tree port type edge
+
+interface Ethernet1/7
+  switchport access vlan 10
+  spanning-tree port type edge
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  ip address 10.255.254.5/32
+
+interface loopback10
+  ip address 10.255.254.105/32
+icam monitor scale
+
+line console
+line vty
+boot nxos bootflash:/nxos64-cs.10.5.2.F.bin
+router bgp 4200000005
+  router-id 10.255.254.5
+  timers bgp 3 9
+  bestpath as-path multipath-relax
+  reconnect-interval 10
+  address-family ipv4 unicast
+    redistribute direct route-map from_connected_to_bgp
+  address-family l2vpn evpn
+    maximum-paths 5
+  template peer spines
+    remote-as 64512
+    ebgp-multihop 5
+    timers 3 9
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+      disable-peer-as-check
+      send-community
+      send-community extended
+  neighbor 10.255.253.108
+    inherit peer spines
+    no bfd
+  neighbor 10.255.253.208
+    inherit peer spines
+  vrf PROD
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+evpn
+  vni 10010 l2
+    rd 4200000005:10
+    route-target import 64512:10
+    route-target export 64512:10
+  vni 10020 l2
+    rd 4200000005:20
+    route-target import 64512:20
+    route-target export 64512:20
+
+
