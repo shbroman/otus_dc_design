@@ -1,0 +1,6 @@
+
+VPCS> show ip all
+
+NAME   IP/MASK              GATEWAY           MAC                DNS
+VPCS1  10.0.10.30/24        10.0.10.1         00:50:79:66:68:2b  10.1.0.10
+
