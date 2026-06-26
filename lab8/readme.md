@@ -599,10 +599,10 @@ interface Ethernet6
 
 LEAF 7 и 8 настроены аналогично 1-му, кроме ASN, IP на интерфейсах. Добавлен LAG до хоста с этих коммутатров по технологии MC-LAG. Через MC-LAG подлючен выход из фабрики для тестового контура
 
+<details>
 <summary><b>LEAF 7:</b></summary>
 
 ```
-
 
 !
 hostname DC01-LSW007
@@ -794,7 +794,7 @@ router bgp 4200000007
 </details>
 
 
-
+<details>
 <summary><b>LEAF 8:</b></summary>
 
 ```
@@ -1001,7 +1001,7 @@ end
 </details>
 
 
-
+<details>
 <summary><b>DC01-FW001:</b></summary>
 
 ```
@@ -1077,7 +1077,7 @@ end
 </details>
 
 
-
+<details>
 <summary><b>DC01-R002:</b></summary>
 
 ```
