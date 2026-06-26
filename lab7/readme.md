@@ -45,29 +45,6 @@
 
 ```
 
-
-! Command: show running-config
-! device: DC01-SSW001 (vEOS-lab, EOS-4.29.2F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-cdp
-   receive
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
-hostname DC01-SSW001
-!
-spanning-tree mode mstp
-!
-clock timezone Etc/GMT-3
-!
 interface Ethernet1
    description # DC01-LSW001 #
    no switchport
@@ -99,16 +76,17 @@ interface Ethernet4
 interface Ethernet5
    description # DC01-LSW005 #
    no switchport
-   ip address 10.255.253.108/31
+   ip address 10.255.253.112/31
    arp aging timeout 300
    bfd interval 999 min-rx 999 multiplier 5
 !
 interface Ethernet6
-!
-interface Ethernet7
-!
-interface Ethernet8
-!
+   description # DC01-LSW006 #
+   no switchport
+   ip address 10.255.253.114/31
+   arp aging timeout 300
+   bfd interval 999 min-rx 999 multiplier 5
+
 interface Loopback0
    ip address 10.255.255.1/32
    isis enable dc01
@@ -131,24 +109,29 @@ peer-filter pf_leafs
 !
 router bgp 64512
    router-id 10.255.255.1
-   timers bgp 3 9
+   timers bgp 10 30
    maximum-paths 4 ecmp 4
    bgp listen range 10.255.253.0/24 peer-group dyn_leafs peer-filter pf_leafs
    neighbor dyn_leafs peer group
-   neighbor dyn_leafs bfd
    neighbor dyn_leafs send-community extended
    neighbor 10.255.253.109 remote-as 4200000005
+   neighbor 10.255.253.109 send-community extended
+   neighbor 10.255.253.111 remote-as 4200000006
+   neighbor 10.255.253.111 send-community extended
    !
    address-family evpn
       neighbor dyn_leafs activate
       neighbor 10.255.253.109 activate
+      neighbor 10.255.253.111 activate
    !
    address-family ipv4
       neighbor dyn_leafs activate
       neighbor 10.255.253.109 activate
+      neighbor 10.255.253.111 activate
       redistribute connected route-map from_connected_to_bgp
 !
 end
+
 
 
 ```
@@ -161,27 +144,9 @@ end
 ```
 
 
-! Command: show running-config
-! device: DC01-SSW002 (vEOS-lab, EOS-4.29.2F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-cdp
-   receive
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
 hostname DC01-SSW002
 !
 spanning-tree mode mstp
-!
-clock timezone Etc/GMT-3
 !
 interface Ethernet1
    description # DC01-LSW001 #
@@ -214,23 +179,20 @@ interface Ethernet4
 interface Ethernet5
    description # DC01-LSW005 #
    no switchport
-   ip address 10.255.253.208/31
+   ip address 10.255.253.212/31
    arp aging timeout 300
    bfd interval 2000 min-rx 2000 multiplier 5
-   no ip ospf neighbor bfd
-   no isis bfd
 !
 interface Ethernet6
-!
-interface Ethernet7
-!
-interface Ethernet8
+   description # DC01-LSW006 #
+   no switchport
+   ip address 10.255.253.214/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
 !
 interface Loopback0
    ip address 10.255.255.2/32
    isis enable dc01
-!
-interface Management1
 !
 ip routing
 !
@@ -248,48 +210,41 @@ peer-filter pf_leafs
 !
 router bgp 64512
    router-id 10.255.255.2
-   timers bgp 3 9
+   timers bgp 10 30
    maximum-paths 4 ecmp 4
    bgp listen range 10.255.253.0/24 peer-group dyn_leafs peer-filter pf_leafs
    neighbor dyn_leafs peer group
-   neighbor dyn_leafs bfd
    neighbor dyn_leafs send-community extended
+   neighbor 10.255.253.209 remote-as 4200000005
+   neighbor 10.255.253.209 send-community extended
+   neighbor 10.255.253.211 remote-as 4200000006
+   neighbor 10.255.253.211 send-community extended
    !
    address-family evpn
       neighbor dyn_leafs activate
+      neighbor 10.255.253.209 activate
+      neighbor 10.255.253.211 activate
    !
    address-family ipv4
       neighbor dyn_leafs activate
+      neighbor 10.255.253.209 activate
+      neighbor 10.255.253.211 activate
       redistribute connected route-map from_connected_to_bgp
 !
 end
 
 
+
+
 ```
 </details>
-На SPINE'ах нет ни VLAN (кроме VLAN 1), ни интерфейсов vxlan... 
-На LEAF'ах в созданы VRF, VLAN, SVI для VLAN в VRF.
+
 
 <details>
 <summary><b>LEAF 1:</b></summary>
 
 ```
-! Command: show running-config
-! device: DC01-LSW001 (vEOS-lab, EOS-4.29.2F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-cdp
-   receive
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
+
 hostname DC01-LSW001
 !
 spanning-tree mode mstp
@@ -327,10 +282,6 @@ interface Ethernet5
 interface Ethernet6
    switchport access vlan 20
 !
-interface Ethernet7
-!
-interface Ethernet8
-!
 interface Loopback0
    ip address 10.255.254.1/32
    isis enable dc01
@@ -352,7 +303,11 @@ interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
+   vxlan vlan 11 vni 10011
+   vxlan vlan 12 vni 10012
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
+   vxlan vrf TEST vni 14095
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
@@ -370,7 +325,7 @@ route-map from_connected_to_bgp permit 20
 !
 router bgp 4200000001
    router-id 10.255.254.1
-   timers bgp 3 9
+   timers bgp 10 30
    maximum-paths 4 ecmp 4
    neighbor spines peer group
    neighbor spines remote-as 64512
@@ -410,37 +365,21 @@ end
 </details>
 
 
+LEAF 2 настроен аналогично, за исключением номеров вланов на access-портах, но добавлен eBGP стык с МСЭ вне фабрики. 
+
 <details>
 <summary><b>LEAF 2:</b></summary>
 
 ```
 
-
-! Command: show running-config
-! device: DC01-LSW002 (vEOS-lab, EOS-4.29.2F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-cdp
-   receive
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
 hostname DC01-LSW002
-!
-spanning-tree mode mstp
-!
-clock timezone Etc/GMT-3
-!
-vlan 10,20
+
+vlan 10-12,20
 !
 vrf instance PROD
+!
+vrf instance TEST
+   rd 4200000002:14095
 !
 interface Ethernet1
    description # DC01-SSW001 #
@@ -463,6 +402,9 @@ interface Ethernet4
    spanning-tree portfast
 !
 interface Ethernet5
+   switchport access vlan 12
+   spanning-tree portfast
+   spanning-tree bpduguard enable
 !
 interface Ethernet6
 !
@@ -472,6 +414,11 @@ interface Ethernet8
    no switchport
    vrf PROD
    ip address 10.1.2.1/30
+!
+interface Ethernet8.11
+   encapsulation dot1q vlan 11
+   vrf TEST
+   ip address 10.1.3.1/30
 !
 interface Loopback0
    ip address 10.255.254.2/32
@@ -491,12 +438,17 @@ interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
+   vxlan vlan 11 vni 10011
+   vxlan vlan 12 vni 10012
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
+   vxlan vrf TEST vni 14095
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
 ip routing vrf PROD
+no ip routing vrf TEST
 !
 ip prefix-list AS65000_out
    seq 10 permit 10.0.0.0/8
@@ -524,7 +476,7 @@ route-map from_connected_to_bgp permit 20
 !
 router bgp 4200000002
    router-id 10.255.254.2
-   timers bgp 3 9
+   timers bgp 10 30
    maximum-paths 4 ecmp 4
    neighbor spines peer group
    neighbor spines remote-as 64512
@@ -538,6 +490,16 @@ router bgp 4200000002
       rd 4200000003:10010
       route-target import 64512:10
       route-target export 64512:10
+      redistribute learned
+   !
+   vlan 11
+      rd 4200000002:10011
+      route-target both 64512:11
+      redistribute learned
+   !
+   vlan 12
+      rd 4200000002:10012
+      route-target both 64512:12
       redistribute learned
    !
    vlan 20
@@ -561,8 +523,15 @@ router bgp 4200000002
       neighbor 10.1.2.2 route-map AS65000_out out
       neighbor 10.1.2.2 send-community standard
       aggregate-address 10.0.0.0/8 advertise-only
+   !
+   vrf TEST
+      rd 4200000002:4095
+      route-target import evpn 64512:4095
+      route-target export evpn 64512:4095
+      redistribute connected
 !
 end
+
 
 
 
@@ -570,35 +539,13 @@ end
 
 </details>
 
+LEAF 3 и 4 настроены аналогично 1-му, кроме ASN, IP на интерфейсах. Добавлен LAG до хоста с этих коммутатров по технологии EVPN Multi-homing. Для упрощения вывожу только его конфиг.
 <details>
 <summary><b>LEAF 3:</b></summary>
 
 ```
 
-! Command: show running-config
-! device: DC01-LSW003 (vEOS-lab, EOS-4.29.2F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
-hostname DC01-LSW003
-!
-spanning-tree mode mstp
-!
-clock timezone Etc/GMT-3
-!
-vlan 10,20
-!
-vrf instance PROD
-   rd 4200000003:14096
-!
+
 interface Port-Channel6
    switchport access vlan 20
    !
@@ -610,112 +557,12 @@ interface Port-Channel6
    spanning-tree portfast
    spanning-tree guard root
 !
-interface Ethernet1
-   description # DC01-SSW001 #
-   no switchport
-   ip address 10.255.253.105/31
-   arp aging timeout 300
-   bfd interval 2000 min-rx 2000 multiplier 5
-!
-interface Ethernet2
-   description # DC01-SSW002 #
-   no switchport
-   ip address 10.255.253.205/31
-   arp aging timeout 300
-   bfd interval 2000 min-rx 2000 multiplier 5
-!
-interface Ethernet3
-!
-interface Ethernet4
-   switchport access vlan 10
-!
-interface Ethernet5
-   switchport access vlan 20
-!
 interface Ethernet6
    switchport access vlan 20
    channel-group 6 mode on
    spanning-tree portfast
    spanning-tree guard root
 !
-interface Ethernet7
-!
-interface Ethernet8
-!
-interface Loopback0
-   ip address 10.255.254.3/32
-   isis enable dc01
-!
-interface Loopback10
-   ip address 10.255.254.103/32
-!
-interface Management1
-!
-interface Vlan10
-   vrf PROD
-   ip address 10.0.10.1/24
-!
-interface Vlan20
-   vrf PROD
-   ip address 10.0.20.1/24
-!
-interface Vxlan1
-   vxlan source-interface Loopback10
-   vxlan udp-port 4789
-   vxlan vlan 10 vni 10010
-   vxlan vlan 20 vni 10020
-!
-ip virtual-router mac-address 00:00:00:00:00:01
-!
-ip routing
-ip routing vrf PROD
-!
-ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
-ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
-!
-route-map from_connected_to_bgp permit 10
-   match ip address prefix-list prf_loopback_leafs
-!
-route-map from_connected_to_bgp permit 20
-   match ip address prefix-list prf_loopback_spines
-!
-router bgp 4200000003
-   router-id 10.255.254.3
-   timers bgp 3 9
-   maximum-paths 4 ecmp 4
-   neighbor spines peer group
-   neighbor spines remote-as 64512
-   neighbor spines bfd
-   neighbor spines send-community extended
-   neighbor 10.255.253.104 peer group spines
-   neighbor 10.255.253.204 peer group spines
-   !
-   vlan 10
-      rd 4200000003:10010
-      route-target import 64512:10
-      route-target export 64512:10
-      redistribute learned
-   !
-   vlan 20
-      rd 4200000003:10020
-      route-target both 64512:20
-      redistribute learned
-   !
-   address-family evpn
-      neighbor spines activate
-   !
-   address-family ipv4
-      neighbor spines activate
-      redistribute connected route-map from_connected_to_bgp
-   !
-   vrf PROD
-      rd 4200000003:4096
-      route-target import evpn 64512:4096
-      route-target export evpn 64512:4096
-      redistribute connected
-!
-end
-
 
 ```
 
@@ -727,39 +574,6 @@ end
 
 ```
 
-! Command: show running-config
-! device: DC01-LSW004 (vEOS-lab, EOS-4.33.1.1F)
-!
-! boot system flash:/vEOS-lab.swi
-!
-no aaa root
-!
-cdp
-   receive
-!
-no service interface inactive port-id allocation disabled
-!
-transceiver qsfp default-mode 4x10G
-!
-service routing protocols model multi-agent
-!
-logging format timestamp traditional timezone
-!
-hostname DC01-LSW004
-!
-spanning-tree mode mstp
-!
-system l1
-   unsupported speed action error
-   unsupported error-correction action error
-!
-clock timezone Etc/GMT-3
-!
-vlan 10,20
-!
-vrf instance PROD
-   rd 4200000004:14096
-!
 interface Port-Channel6
    switchport access vlan 20
    !
@@ -771,42 +585,100 @@ interface Port-Channel6
    spanning-tree portfast
    spanning-tree guard root
 !
-interface Ethernet1
-   description # DC01-SSW001 #
-   no switchport
-   ip address 10.255.253.107/31
-   arp aging timeout 300
-   bfd interval 2000 min-rx 2000 multiplier 5
-!
-interface Ethernet2
-   description # DC01-SSW002 #
-   no switchport
-   ip address 10.255.253.207/31
-   arp aging timeout 300
-   bfd interval 2000 min-rx 2000 multiplier 5
-!
-interface Ethernet3
-!
-interface Ethernet4
-!
-interface Ethernet5
-!
 interface Ethernet6
    switchport access vlan 20
    channel-group 6 mode on
    spanning-tree portfast
    spanning-tree guard root
 !
+
+```
+
+
+</details>
+
+LEAF 7 и 8 настроены аналогично 1-му, кроме ASN, IP на интерфейсах. Добавлен LAG до хоста с этих коммутатров по технологии MC-LAG. Через MC-LAG подлючен выход из фабрики для тестового контура
+
+<summary><b>LEAF 7:</b></summary>
+
+```
+
+
+!
+hostname DC01-LSW007
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4001
+!
+!
+clock timezone Etc/GMT-3
+!
+vlan 10,12,20,1011-1012
+!
+vlan 4001
+   name MLAG_PEER
+   trunk group MLAG_PEER
+!
+vrf instance MLAG
+!
+vrf instance PROD
+   rd 4200000007:14096
+!
+vrf instance TEST
+!
+interface Port-Channel3
+   switchport trunk allowed vlan 12,1011-1012
+   switchport mode trunk
+   mlag 3
+!
+interface Port-Channel7
+   switchport mode trunk
+   switchport trunk group MLAG_PEER
+!
+interface Ethernet1
+   description # DC01-SSW001 #
+   no switchport
+   ip address 10.255.253.113/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+!
+interface Ethernet2
+   description # DC01-SSW002 #
+   no switchport
+   ip address 10.255.253.213/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+!
+interface Ethernet3
+   channel-group 3 mode active
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+   no switchport
+   vrf MLAG
+   ip address 172.16.0.0/31
+!
 interface Ethernet7
+   description Peer-link
+   switchport mode trunk
+   no switchport
+   channel-group 7 mode active
 !
 interface Ethernet8
+   description Peer-link
+   switchport mode trunk
+   no switchport
+   channel-group 7 mode active
 !
 interface Loopback0
-   ip address 10.255.254.4/32
+   ip address 10.255.254.7/32
    isis enable dc01
 !
 interface Loopback10
-   ip address 10.255.254.104/32
+   ip address 10.255.254.107/32
 !
 interface Management1
 !
@@ -818,19 +690,45 @@ interface Vlan20
    vrf PROD
    ip address 10.0.20.1/24
 !
+interface Vlan1011
+   vrf TEST
+   ip address 10.1.3.9/29
+!
+interface Vlan1012
+   vrf PROD
+   ip address 10.1.3.17/29
+!
+interface Vlan4001
+   ip address 172.16.0.5/30
+!
 interface Vxlan1
    vxlan source-interface Loopback10
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
+   vxlan vlan 11 vni 10011
+   vxlan vlan 12 vni 10012
    vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
+   vxlan vrf TEST vni 14095
 !
 ip virtual-router mac-address 00:00:00:00:00:01
 !
 ip routing
+no ip routing vrf MLAG
 ip routing vrf PROD
+ip routing vrf TEST
 !
 ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+!
+mlag configuration
+   domain-id 07
+   heartbeat-interval 15000
+   local-interface Vlan4001
+   peer-address 172.16.0.6
+   peer-address heartbeat 172.16.0.1 vrf MLAG
+   peer-link Port-Channel7
+   reload-delay 300
 !
 route-map from_connected_to_bgp permit 10
    match ip address prefix-list prf_loopback_leafs
@@ -838,25 +736,30 @@ route-map from_connected_to_bgp permit 10
 route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
-router bgp 4200000004
-   router-id 10.255.254.4
-   timers bgp 3 9
+router bgp 4200000007
+   router-id 10.255.254.7
+   timers bgp 10 30
    maximum-paths 4 ecmp 4
    neighbor spines peer group
    neighbor spines remote-as 64512
    neighbor spines bfd
    neighbor spines send-community extended
-   neighbor 10.255.253.106 peer group spines
-   neighbor 10.255.253.206 peer group spines
+   neighbor 10.255.253.112 peer group spines
+   neighbor 10.255.253.212 peer group spines
    !
    vlan 10
-      rd 4200000004:10010
+      rd 4200000007:10010
       route-target import 64512:10
       route-target export 64512:10
       redistribute learned
    !
+   vlan 12
+      rd 4200000007:10012
+      route-target both 64512:12
+      redistribute learned
+   !
    vlan 20
-      rd 4200000004:10020
+      rd 4200000007:10020
       route-target both 64512:20
       redistribute learned
    !
@@ -868,9 +771,218 @@ router bgp 4200000004
       redistribute connected route-map from_connected_to_bgp
    !
    vrf PROD
-      rd 4200000004:4096
+      rd 4200000007:4096
       route-target import evpn 64512:4096
       route-target export evpn 64512:4096
+      neighbor 10.1.3.22 remote-as 65001
+      neighbor 10.1.3.22 timers 60 180
+      redistribute connected
+   !
+   vrf TEST
+      rd 4200000007:4095
+      route-target import evpn 64512:4095
+      route-target export evpn 64512:4095
+      neighbor 10.1.3.14 remote-as 65001
+      neighbor 10.1.3.14 timers 60 180
+      redistribute connected
+
+
+
+```
+
+
+</details>
+
+
+
+<summary><b>LEAF 8:</b></summary>
+
+```
+
+!
+hostname DC01-LSW008
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4001
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+clock timezone Etc/GMT-3
+!
+vlan 10,12,20,1011-1012
+!
+vlan 4001
+   name MLAG_PEER
+   trunk group MLAG_PEER
+!
+vrf instance MLAG
+!
+vrf instance PROD
+   rd 4200000008:14096
+!
+vrf instance TEST
+!
+interface Port-Channel3
+   switchport trunk allowed vlan 12,1011-1012
+   switchport mode trunk
+   mlag 3
+   spanning-tree bpdufilter enable
+!
+interface Port-Channel7
+   switchport mode trunk
+   switchport trunk group MLAG_PEER
+!
+interface Ethernet1
+   description # DC01-SSW001 #
+   no switchport
+   ip address 10.255.253.115/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+!
+interface Ethernet2
+   description # DC01-SSW002 #
+   no switchport
+   ip address 10.255.253.215/31
+   arp aging timeout 300
+   bfd interval 2000 min-rx 2000 multiplier 5
+!
+interface Ethernet3
+   channel-group 3 mode active
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+   no switchport
+   vrf MLAG
+   ip address 172.16.0.1/31
+!
+interface Ethernet7
+   description Peer-link
+   switchport mode trunk
+   no switchport
+   channel-group 7 mode active
+!
+interface Ethernet8
+   description Peer-link
+   switchport mode trunk
+   no switchport
+   channel-group 7 mode active
+!
+interface Loopback0
+   ip address 10.255.254.8/32
+   isis enable dc01
+!
+interface Loopback10
+   ip address 10.255.254.108/32
+!
+interface Management1
+!
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.0.10.1/24
+!
+interface Vlan20
+   vrf PROD
+   ip address 10.0.20.1/24
+!
+interface Vlan1011
+   vrf TEST
+   ip address 10.1.3.10/29
+!
+interface Vlan1012
+   vrf PROD
+   ip address 10.1.3.18/29
+!
+interface Vlan4001
+   ip address 172.16.0.6/30
+!
+interface Vxlan1
+   vxlan source-interface Loopback10
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 10010
+   vxlan vlan 11 vni 10011
+   vxlan vlan 12 vni 10012
+   vxlan vlan 20 vni 10020
+   vxlan vrf PROD vni 14096
+   vxlan vrf TEST vni 14095
+!
+ip virtual-router mac-address 00:00:00:00:00:01
+!
+ip routing
+no ip routing vrf MLAG
+ip routing vrf PROD
+ip routing vrf TEST
+!
+ip prefix-list prf_loopback_leafs seq 10 permit 10.255.254.0/24 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.255.255.0/24 le 32
+!
+mlag configuration
+   domain-id 07
+   heartbeat-interval 15000
+   local-interface Vlan4001
+   peer-address 172.16.0.5
+   peer-address heartbeat 172.16.0.0 vrf MLAG
+   peer-link Port-Channel7
+   reload-delay 300
+!
+route-map from_connected_to_bgp permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map from_connected_to_bgp permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+router bgp 4200000008
+   router-id 10.255.254.8
+   timers bgp 10 30
+   maximum-paths 4 ecmp 4
+   neighbor spines peer group
+   neighbor spines remote-as 64512
+   neighbor spines bfd
+   neighbor spines send-community extended
+   neighbor 10.255.253.114 peer group spines
+   neighbor 10.255.253.214 peer group spines
+   !
+   vlan 10
+      rd 4200000008:10010
+      route-target import 64512:10
+      route-target export 64512:10
+      redistribute learned
+   !
+   vlan 12
+      rd 4200000008:10012
+      route-target both 64512:12
+      redistribute learned
+   !
+   vlan 20
+      rd 4200000008:10020
+      route-target both 64512:20
+      redistribute learned
+   !
+   address-family evpn
+      neighbor spines activate
+   !
+   address-family ipv4
+      neighbor spines activate
+      redistribute connected route-map from_connected_to_bgp
+   !
+   vrf PROD
+      rd 4200000008:4096
+      route-target import evpn 64512:4096
+      route-target export evpn 64512:4096
+      neighbor 10.1.3.22 remote-as 65001
+      neighbor 10.1.3.22 timers 60 180
+      redistribute connected
+   !
+   vrf TEST
+      rd 4200000008:4095
+      route-target import evpn 64512:4095
+      route-target export evpn 64512:4095
+      neighbor 10.1.3.14 remote-as 65001
+      neighbor 10.1.3.14 timers 60 180
       redistribute connected
 !
 router multicast
@@ -887,6 +999,156 @@ end
 
 
 </details>
+
+
+
+<summary><b>DC01-FW001:</b></summary>
+
+```
+
+DC01-FW01 # show system interface port1.11
+config system interface
+    edit "port1.11"
+        set vdom "root"
+        set ip 10.1.3.2 255.255.255.252
+        set allowaccess ping
+        set device-identification enable
+        set role lan
+        set snmp-index 10
+        set interface "port1"
+        set vlanid 11
+    next
+    edit "loopback0"
+        set vdom "root"
+        set ip 8.8.8.8 255.255.255.255
+        set allowaccess ping
+        set type loopback
+        set snmp-index 9
+    next
+
+end
+
+config router bgp
+    set as 65000
+    set keepalive-timer 10
+    set holdtime-timer 30
+    set graceful-restart enable
+    config neighbor
+        edit "10.1.2.1"
+            set capability-graceful-restart enable
+            set capability-default-originate enable
+            set remote-as 4200000002
+        next
+    end
+    config network
+        edit 1
+            set prefix 8.8.8.8 255.255.255.255
+        next
+    end
+    config redistribute "connected"
+    end
+    config redistribute "rip"
+    end
+    config redistribute "ospf"
+    end
+    config redistribute "static"
+        set status enable
+    end
+    config redistribute "isis"
+    end
+    config redistribute6 "connected"
+    end
+    config redistribute6 "rip"
+    end
+    config redistribute6 "ospf"
+    end
+    config redistribute6 "static"
+    end
+    config redistribute6 "isis"
+    end
+end
+
+
+
+
+```
+
+
+</details>
+
+
+
+<summary><b>DC01-R002:</b></summary>
+
+```
+
+hostname DC01-R002
+!
+
+
+spanning-tree mode mst
+spanning-tree extend system-id
+!
+!
+vlan 1011-1012
+lldp run
+!
+interface Port-channel1
+ switchport trunk allowed vlan 12,1011,1012
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ spanning-tree bpdufilter enable
+!
+interface GigabitEthernet0/0
+ switchport trunk allowed vlan 12,1011,1012
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no negotiation auto
+ channel-group 1 mode active
+ spanning-tree bpdufilter enable
+!
+interface GigabitEthernet0/1
+ switchport trunk allowed vlan 12,1011,1012
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no negotiation auto
+ channel-group 1 mode active
+ spanning-tree bpdufilter enable
+!
+
+interface Vlan12
+ ip address 10.0.12.1 255.255.255.0
+!
+interface Vlan1011
+ ip address 10.1.3.14 255.255.255.248
+!
+interface Vlan1012
+ ip address 10.1.3.22 255.255.255.248
+!
+router bgp 65001
+ bgp router-id 10.1.3.22
+ bgp log-neighbor-changes
+ redistribute connected
+ neighbor 10.1.3.9 remote-as 4200000007
+ neighbor 10.1.3.9 default-originate
+ neighbor 10.1.3.9 as-override
+ neighbor 10.1.3.10 remote-as 4200000008
+ neighbor 10.1.3.10 default-originate
+ neighbor 10.1.3.10 as-override
+ neighbor 10.1.3.17 remote-as 4200000007
+ neighbor 10.1.3.17 as-override
+ neighbor 10.1.3.18 remote-as 4200000008
+ neighbor 10.1.3.18 as-override
+!
+
+
+
+```
+
+
+</details>
+
+
 
 #### Конфигурация хостов:
 <details>
@@ -937,15 +1199,20 @@ bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
 📥 [Скачать](./configs)  файлы лабы в текстовом формате 
 
 #### Выполненная работа:
-В текущую конфигурацию 2х LEAF 3x SPINE Добавлен LEAF 4 с ПО, версия которого немного отличается от LEAF 3. На основе LEAF 3 и 4 был создан etherchannel для хоста SRV20-136. ESI выбран по формуле: 0001.мак_"главного"_свича.порядковый_номер_etherchannel'a, lacp id равен маку "главного" коммутатора в etherchannel'e. К сожалению, тестовая среда не работает корректно с LACP, а также состояние линка на коммутаторе не соотвествует состоянию линку на хосте. Для проверки пришлось сделать shutdown на порту LEAF 3 и 4 вместе с shutdown соответствующего интерфейса на хосте.
+В текущую конфигурацию 2х LEAF 3x SPINE Добавлен LEAF 4 с ПО, версия которого немного отличается от LEAF 3. На основе LEAF 3 и 4 был создан etherchannel для хоста SRV20-136. ESI выбран по формуле: 0001.мак_"главного"_свича.порядковый_номер_etherchannel'a, lacp id равен маку "главного" коммутатора в etherchannel'e. Пробовали добавить cisco Nexus - после многочисленных проблем было принято отказаться по причине нестабильной работы образа, потому LEAF 5 и 6 были заменены на LEAF 7 и 8 вендора ARISTA, на которых был построен MC-LAG вместо предполагаемого vPC на нексусах. К LEAF 7 и 8 был подключен МСЭ через MC-LAG. К сожалению, на образе МСЭ Fortigate в эмуляторе не работает маршрутизация через сабыинтерфейсы на LAG, потому пришлось его заменить. Образ маршрутизатора cisco не поддерживает port-channel, потому был выбрал в качестве замены МСЭ образ L3-коммутатора cisco Catalyst, выполняющий эмуляцию МСЭ. 
+
+В лабоработории созданы 2 независимых IP-контура: TEST и PROD. Используются два независимых выхода в интернет: PROD выходит через МСЭ DC01-FW001, а TEST через DC01-R002. В PROD используется ANYCAST GW, в TEST используется как ANYCAST GW, так и прозрачный транспорт по L2 до GW, расположенному на DC01-R002.
+
+Маршрутизация между vrf TEST и PROD осуществеляется через DC01-R002, выполняющего роль МСЭ между "тестовым" и "продуктивным" контуром организации.
+
+Производительности не хватало на работу BFD, его пришлось отключить. Также пришлось увеличить таймеры BGP с 3 9 до 10 30.
 
 ### Проверка доступности: 
 Проверка выполняется на каждом из коммутаторов по следующим критериям:
  - просмотр BGP топологии и соседей;
  - просмотр таблицы маршрутизации на каждом коммутаторе;
  - проверка связности посредством icmp echo request.
- В pnetlab имеется ограничение по протоколам lacp, ввиду этого пришлось делать static link-aggregation
- - 
+ 
 
 Проверка на LEAF 1:
 <details>
@@ -955,49 +1222,6 @@ bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
 
 
 
-DC01-LSW001#show bgp evpn route-type ethernet-segment
-BGP routing table information for VRF default
-Router identifier 10.255.254.1, local AS number 4200000001
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending BGP convergence
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
-DC01-LSW001#show bgp evpn route-type auto-discovery
-BGP routing table information for VRF default
-Router identifier 10.255.254.1, local AS number 4200000001
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending BGP convergence
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- * >Ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >Ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
-DC01-LSW001#
 
 
 
@@ -1012,83 +1236,6 @@ DC01-LSW001#
 ```
 
 
-DC01-LSW003#sh port-channel brief
-Port Channel Port-Channel6:
-  Active Ports: Ethernet6
-DC01-LSW003#show bgp evpn summary
-BGP summary information for VRF default
-Router identifier 10.255.254.3, local AS number 4200000003
-Neighbor Status Codes: m - Under maintenance
-  Neighbor       V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  10.255.253.104 4 64512         168953    169131    0    0 01:14:07 Estab   9      9
-  10.255.253.204 4 64512         168939    169150    0    0 01:14:07 Estab   9      9
-
-DC01-LSW003#show bgp evpn vni 10020
-BGP routing table information for VRF default
-Router identifier 10.255.254.3, local AS number 4200000003
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending BGP convergence
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 -                     -       -       0       i
- * >Ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- * >Ec    RD: 4200000001:10020 imet 10.255.254.101
-                                 10.255.254.101        -       100     0       64512 4200000001 i
- *  ec    RD: 4200000001:10020 imet 10.255.254.101
-                                 10.255.254.101        -       100     0       64512 4200000001 i
- * >Ec    RD: 4200000003:10020 imet 10.255.254.102
-                                 10.255.254.102        -       100     0       64512 4200000002 i
- *  ec    RD: 4200000003:10020 imet 10.255.254.102
-                                 10.255.254.102        -       100     0       64512 4200000002 i
- * >      RD: 4200000003:10020 imet 10.255.254.103
-                                 -                     -       -       0       i
- * >Ec    RD: 4200000004:10020 imet 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 4200000004:10020 imet 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
-DC01-LSW003#show bgp evpn route-type auto-discovery
-BGP routing table information for VRF default
-Router identifier 10.255.254.3, local AS number 4200000003
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending BGP convergence
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 -                     -       -       0       i
- * >Ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- * >      RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 -                     -       -       0       i
- * >Ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
-                                 10.255.254.104        -       100     0       64512 4200000004 i
-DC01-LSW003#show bgp evpn route-type ethernet-segment
-BGP routing table information for VRF default
-Router identifier 10.255.254.3, local AS number 4200000003
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending BGP convergence
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
-                                 -                     -       -       0       i
- * >Ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
- *  ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
-                                 10.255.254.104        -       100     0       64512 4200000004 i
-DC01-LSW003#
 
 
 
@@ -1103,14 +1250,130 @@ DC01-LSW003#
 
 ```
 
-DC01-LSW004#show port-channel brief
-Port Channel Port-Channel6:
-  Active Ports: Ethernet6
-DC01-LSW004#show bgp evpn vni 10020
+
+
+
+
+```
+</details>
+
+
+
+Команды для проверки:
+<details>
+<summary><b>DC01-R002:</b></summary>
+
+```
+
+
+DC01-R002#               show ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 10.1.3.17 to network 0.0.0.0
+
+B*    0.0.0.0/0 [20/0] via 10.1.3.17, 00:04:13
+      8.0.0.0/32 is subnetted, 1 subnets
+B        8.8.8.8 [20/0] via 10.1.3.17, 00:04:13
+      10.0.0.0/8 is variably subnetted, 11 subnets, 4 masks
+B        10.0.10.0/24 [20/0] via 10.1.3.17, 00:04:13
+B        10.0.10.10/32 [20/0] via 10.1.3.17, 00:00:55
+C        10.0.12.0/24 is directly connected, Vlan12
+L        10.0.12.1/32 is directly connected, Vlan12
+B        10.0.20.0/24 [20/0] via 10.1.3.17, 00:04:13
+B        10.0.20.136/32 [20/0] via 10.1.3.17, 00:00:35
+B        10.1.3.0/30 [20/0] via 10.1.3.9, 00:04:13
+C        10.1.3.8/29 is directly connected, Vlan1011
+L        10.1.3.14/32 is directly connected, Vlan1011
+C        10.1.3.16/29 is directly connected, Vlan1012
+L        10.1.3.22/32 is directly connected, Vlan1012
+DC01-R002#
+
+
+
+
+```
+</details>
+
+
+<details>
+<summary><b>DC01-FW001</b></summary>
+
+```
+
+
+DC01-FW01 # get router info routing-table all
+Codes: K - kernel, C - connected, S - static, R - RIP, B - BGP
+       O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       V - BGP VPNv4
+       * - candidate default
+
+Routing table for VRF=0
+S*      0.0.0.0/0 [250/0] is a summary, Null, [1/0]
+C       8.8.8.8/32 is directly connected, loopback0
+B       10.0.0.0/8 [20/0] via 10.1.2.1 (recursive is directly connected, port1), 00:06:32, [1/0]
+C       10.1.2.0/30 is directly connected, port1
+C       10.1.3.0/30 is directly connected, port1.11
+
+
+
+
+
+```
+</details>
+
+<details>
+<summary><b>DC01-LSW001:</b></summary>
+
+```
+
+
+DC01-LSW001#show ip route vrf TEST
+% IP Routing table for VRF TEST does not exist.
+DC01-LSW001#show ip route vrf PROD
+
+VRF: PROD
+Codes: C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0] via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+
+ B E      8.8.8.8/32 [200/0] via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ C        10.0.10.0/24 is directly connected, Vlan10
+ B E      10.0.12.0/24 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                               via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ B E      10.0.20.136/32 [200/0] via VTEP 10.255.254.103 VNI 14096 router-mac 50:27:d2:e6:4a:b8 local-interface Vxlan1
+ C        10.0.20.0/24 is directly connected, Vlan20
+ B E      10.1.3.8/29 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                              via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ B E      10.1.3.16/29 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                               via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+
+DC01-LSW001#show bgp evpn
 BGP routing table information for VRF default
-Router identifier 10.255.254.4, local AS number 4200000004
+Router identifier 10.255.254.1, local AS number 4200000001
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending best path selection
+                    c - Contributing to ECMP, % - Pending BGP convergence
 Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
@@ -1119,44 +1382,504 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  10.255.254.103        -       100     0       64512 4200000003 i
  *  ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
                                  10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 -                     -       -       0       i
- * >Ec    RD: 4200000001:10020 imet 10.255.254.101
-                                 10.255.254.101        -       100     0       64512 4200000001 i
- *  ec    RD: 4200000001:10020 imet 10.255.254.101
-                                 10.255.254.101        -       100     0       64512 4200000001 i
- * >Ec    RD: 4200000003:10020 imet 10.255.254.102
-                                 10.255.254.102        -       100     0       64512 4200000002 i
- *  ec    RD: 4200000003:10020 imet 10.255.254.102
-                                 10.255.254.102        -       100     0       64512 4200000002 i
- * >Ec    RD: 4200000003:10020 imet 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:10020 imet 10.255.254.103
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 4200000004:10020 imet 10.255.254.104
-                                 -                     -       -       0       i
-DC01-LSW004#show bgp evpn route-type auto-discovery
-BGP routing table information for VRF default
-Router identifier 10.255.254.4, local AS number 4200000004
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending best path selection
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- *  ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
-                                 -                     -       -       0       i
+ * >Ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
  * >Ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
                                  10.255.254.103        -       100     0       64512 4200000003 i
  *  ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
                                  10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
+ * >Ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >      RD: 4200000001:10010 mac-ip 0050.7966.6829
                                  -                     -       -       0       i
-DC01-LSW004#show bgp evpn route-type ethernet-segment
+ * >      RD: 4200000001:10010 mac-ip 0050.7966.6829 10.0.10.10
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000003:10020 mac-ip 5000.0043.0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10020 mac-ip 5000.0043.0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10020 mac-ip 5000.0043.0001 10.0.20.136
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10020 mac-ip 5000.0043.0001 10.0.20.136
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000004:10020 mac-ip 5000.0043.0001 10.0.20.136
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10020 mac-ip 5000.0043.0001 10.0.20.136
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000007:10012 mac-ip 5095.7100.800c
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:10012 mac-ip 5095.7100.800c
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:10012 mac-ip 5095.7100.800c
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10012 mac-ip 5095.7100.800c
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >      RD: 4200000001:10010 imet 10.255.254.101
+                                 -                     -       -       0       i
+ * >      RD: 4200000001:10020 imet 10.255.254.101
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000002:10011 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:10011 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000002:10012 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:10012 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10010 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000003:10010 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10020 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000003:10020 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10010 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10010 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10011 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10011 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10012 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10012 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10020 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10020 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000004:10010 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10010 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000004:10020 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10020 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000007:10010 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:10010 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000007:10012 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:10012 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000007:10020 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:10020 imet 10.255.254.107
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:10010 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10010 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:10012 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10012 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:10020 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10020 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ * >Ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >      RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >      RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+DC01-LSW001#
+
+
+
+
+```
+</details>
+
+<details>
+<summary><b>DC01-LSW002:</b></summary>
+
+```
+DC01-LSW002#show ip route vrf TEST
+
+VRF: TEST
+Codes: C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                            via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+
+ B E      10.0.10.0/24 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                               via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+ B E      10.0.12.0/24 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                               via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+ B E      10.0.20.0/24 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                               via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+ C        10.1.3.0/30 is directly connected, Ethernet8.11
+ B E      10.1.3.8/29 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                              via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+ B E      10.1.3.16/29 [200/0] via VTEP 10.255.254.108 VNI 14095 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                               via VTEP 10.255.254.107 VNI 14095 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+
+DC01-LSW002#  sh ip route vrf PROD
+
+VRF: PROD
+Codes: C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0] via 10.1.2.2, Ethernet8
+
+ B E      8.8.8.8/32 [200/0] via 10.1.2.2, Ethernet8
+ B E      10.0.10.10/32 [200/0] via VTEP 10.255.254.101 VNI 14096 router-mac 50:88:7f:51:e6:16 local-interface Vxlan1
+ C        10.0.10.0/24 is directly connected, Vlan10
+ B E      10.0.12.0/24 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                               via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ B E      10.0.20.136/32 [200/0] via VTEP 10.255.254.103 VNI 14096 router-mac 50:27:d2:e6:4a:b8 local-interface Vxlan1
+ B E      10.0.20.0/24 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                               via VTEP 10.255.254.103 VNI 14096 router-mac 50:27:d2:e6:4a:b8 local-interface Vxlan1
+                               via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+                               via VTEP 10.255.254.101 VNI 14096 router-mac 50:88:7f:51:e6:16 local-interface Vxlan1
+ C        10.1.2.0/30 is directly connected, Ethernet8
+ B E      10.1.3.8/29 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                              via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ B E      10.1.3.16/29 [200/0] via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+                               via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+
+DC01-LSW002#  sh bgp evpn route-type ?
+  auto-discovery    Filter by Ethernet auto-discovery (A-D) route (type 1)
+  ethernet-segment  Filter by Ethernet segment route (type 4)
+  imet              Filter by inclusive multicast Ethernet tag route (type 3)
+  ip-prefix         Filter by IP prefix route (type 5)
+  join-sync         Filter by multicast join sync route (type 7)
+  leave-sync        Filter by multicast leave sync route (type 8)
+  mac-ip            Filter by MAC/IP advertisement route (type 2)
+  smet              Filter by selective multicast Ethernet tag route (type 6)
+  spmsi             Filter by selective PMSI auto discovery route (type 10)
+
+DC01-LSW002#  sh bgp evpn route-type ip-prefix
+% Incomplete command
+DC01-LSW002#  sh bgp evpn route-type ip-prefix ?
+  A.B.C.D/E          IPv4 address prefix
+  A:B:C:D:E:F:G:H/I  IPv6 address prefix
+  ipv4               Limit address family to IPv4
+  ipv6               Limit address family to IPv6
+
+DC01-LSW002#  sh bgp evpn route-type ip-prefix ipv4
+BGP routing table information for VRF default
+Router identifier 10.255.254.2, local AS number 4200000002
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 -                     -       100     0       65000 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ * >      RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 -                     -       100     0       65000 i
+ * >      RD: 4200000002:4096 ip-prefix 10.0.0.0/8
+                                 -                     -       -       0       64512 ?
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >      RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ DC01-LSW002#
+
+
+
+
+
+```
+</details>
+
+<details>
+<summary><b>DC01-LSW004:</b></summary>
+
+```
+
+DC01-LSW004#
+DC01-LSW004#show ip route vrf PROD
+
+VRF: PROD
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+
+ B E      8.8.8.8/32 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ B E      10.0.10.10/32 [200/0]
+           via VTEP 10.255.254.101 VNI 14096 router-mac 50:88:7f:51:e6:16 local-interface Vxlan1
+ C        10.0.10.0/24
+           directly connected, Vlan10
+ B E      10.0.12.0/24 [200/0]
+           via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+           via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ C        10.0.20.0/24
+           directly connected, Vlan20
+ B E      10.1.3.8/29 [200/0]
+           via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+           via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+ B E      10.1.3.16/29 [200/0]
+           via VTEP 10.255.254.107 VNI 14096 router-mac 50:3f:db:23:01:6e local-interface Vxlan1
+           via VTEP 10.255.254.108 VNI 14096 router-mac 50:5e:42:61:1c:70 local-interface Vxlan1
+
+DC01-LSW004#show ip route vrf TEST
+% IP Routing table for VRF TEST does not exist.
+DC01-LSW004#sh bgp evpn route-type ip-prefix ipv4
 BGP routing table information for VRF default
 Router identifier 10.255.254.4, local AS number 4200000004
 Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
@@ -1165,52 +1888,414 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
           Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ * >Ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 65001 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ *  ec    RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 65001 ?
+ * >Ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ *  ec    RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.107        -       100     0       64512 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+DC01-LSW004#
+
+
+
+
+```
+</details>
+
+<details>
+<summary><b>DC01-LSW007:</b></summary>
+
+```
+
+DC01-LSW007#show ip route vrf TEST
+
+VRF: TEST
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0]
+           via 10.1.3.14, Vlan1011
+
+ B E      8.8.8.8/32 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.10.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.12.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.20.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.1.3.0/30 [200/0]
+           via VTEP 10.255.254.102 VNI 14095 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ C        10.1.3.8/29
+           directly connected, Vlan1011
+ B E      10.1.3.16/29 [200/0]
+           via 10.1.3.14, Vlan1011
+
+DC01-LSW007#show ip route vrf PROD
+
+VRF: PROD
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+
+ B E      8.8.8.8/32 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ C        10.0.10.0/24
+           directly connected, Vlan10
+ B E      10.0.12.0/24 [200/0]
+           via 10.1.3.22, Vlan1012
+ C        10.0.20.0/24
+           directly connected, Vlan20
+ B E      10.1.3.0/30 [200/0]
+           via 10.1.3.22, Vlan1012
+ B E      10.1.3.8/29 [200/0]
+           via 10.1.3.22, Vlan1012
+ C        10.1.3.16/29
+           directly connected, Vlan1012
+
+DC01-LSW007#sh bgp evpn
+BGP routing table information for VRF default
+Router identifier 10.255.254.7, local AS number 4200000007
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10020 auto-discovery 0 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 10.255.254.103:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 10.255.254.104:1 auto-discovery 0001:50c1:5528:a4cc:0001
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >      RD: 4200000007:10012 mac-ip 5095.7100.800c
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000008:10012 mac-ip 5095.7100.800c
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10012 mac-ip 5095.7100.800c
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000001:10010 imet 10.255.254.101
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:10010 imet 10.255.254.101
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000001:10020 imet 10.255.254.101
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:10020 imet 10.255.254.101
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000002:10011 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:10011 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000002:10012 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:10012 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10010 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000003:10010 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10020 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000003:10020 imet 10.255.254.102
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >Ec    RD: 4200000003:10010 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10010 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10011 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10011 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10012 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10012 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000003:10020 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:10020 imet 10.255.254.103
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >Ec    RD: 4200000004:10010 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10010 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000004:10020 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 4200000004:10020 imet 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >      RD: 4200000007:10010 imet 10.255.254.107
+                                 -                     -       -       0       i
+ * >      RD: 4200000007:10012 imet 10.255.254.107
+                                 -                     -       -       0       i
+ * >      RD: 4200000007:10020 imet 10.255.254.107
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000008:10010 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10010 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:10012 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10012 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:10020 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:10020 imet 10.255.254.108
+                                 10.255.254.108        -       100     0       64512 4200000008 i
  * >Ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
                                  10.255.254.103        -       100     0       64512 4200000003 i
  *  ec    RD: 10.255.254.103:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.103
                                  10.255.254.103        -       100     0       64512 4200000003 i
- * >      RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
+ * >Ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ *  ec    RD: 10.255.254.104:1 ethernet-segment 0001:50c1:5528:a4cc:0001 10.255.254.104
+                                 10.255.254.104        -       100     0       64512 4200000004 i
+ * >Ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 0.0.0.0/0
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >      RD: 4200000007:4095 ip-prefix 0.0.0.0/0
+                                 -                     -       100     0       65001 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 0.0.0.0/0
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ * >Ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ *  ec    RD: 4200000002:4096 ip-prefix 8.8.8.8/32
+                                 10.255.254.102        -       100     0       64512 4200000002 65000 i
+ * >      RD: 4200000007:4095 ip-prefix 8.8.8.8/32
+                                 -                     -       100     0       65001 65001 64512 4200000002 65000 i
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >      RD: 4200000007:4095 ip-prefix 10.0.10.0/24
+                                 -                     -       100     0       65001 65001 i
+ * >      RD: 4200000007:4096 ip-prefix 10.0.10.0/24
                                  -                     -       -       0       i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >      RD: 4200000007:4095 ip-prefix 10.0.12.0/24
+                                 -                     0       100     0       65001 ?
+ * >      RD: 4200000007:4096 ip-prefix 10.0.12.0/24
+                                 -                     0       100     0       65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ *  ec    RD: 4200000001:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.101        -       100     0       64512 4200000001 i
+ * >Ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ *  ec    RD: 4200000003:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.103        -       100     0       64512 4200000003 i
+ * >      RD: 4200000007:4095 ip-prefix 10.0.20.0/24
+                                 -                     -       100     0       65001 65001 i
+ * >      RD: 4200000007:4096 ip-prefix 10.0.20.0/24
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ *  ec    RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 10.255.254.102        -       100     0       64512 4200000002 i
+ * >      RD: 4200000007:4096 ip-prefix 10.1.3.0/30
+                                 -                     -       100     0       65001 65001 64512 4200000002 i
+ * >      RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 -                     -       -       0       i
+ *        RD: 4200000007:4095 ip-prefix 10.1.3.8/29
+                                 -                     0       100     0       65001 ?
+ * >      RD: 4200000007:4096 ip-prefix 10.1.3.8/29
+                                 -                     0       100     0       65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >      RD: 4200000007:4095 ip-prefix 10.1.3.16/29
+                                 -                     0       100     0       65001 ?
+ * >      RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 -                     -       -       0       i
+ *        RD: 4200000007:4096 ip-prefix 10.1.3.16/29
+                                 -                     0       100     0       65001 ?
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 ?
+ * >Ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4096 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+DC01-LSW007#
+
 
 
 
 ```
 </details>
 
-Будем выполнять отключение порта коммутатора (ethernet 6 shutdown и eth1/eth2 shutdown на хосте)
-
-Команды для проверки:
-<details>
-<summary><b>Проверка:</b></summary>
-
-```
-
-
-DC01-LSW003(config)#int eth 6
-DC01-LSW003(config-if-Et6)#shutdown
-
-root@Docker:/#
-root@Docker:/# ip link set eth1 down
-
-DC01-LSW003(config-if-Et6)#no shu
-DC01-LSW003(config-if-Et6)#end
-
-root@Docker:/# ip link set eth1 up
-
-DC01-LSW004(config)#interface Ethernet6
-DC01-LSW004(config-if-Et6)#shutdown
-
-root@Docker:/# ip link set eth2 down
-
-DC01-LSW004(config-if-Et6)#no shutdown
-DC01-LSW004(config-if-Et6)#end
-
-root@Docker:/# ip link set eth2 up
-
-
-
-```
-</details>
 
 
 <details>
@@ -1219,273 +2304,48 @@ root@Docker:/# ip link set eth2 up
 ```
 
 
-84 bytes from 10.0.20.136 icmp_seq=1 ttl=63 time=674.511 ms
-84 bytes from 10.0.20.136 icmp_seq=2 ttl=63 time=114.197 ms
-84 bytes from 10.0.20.136 icmp_seq=3 ttl=63 time=87.434 ms
-84 bytes from 10.0.20.136 icmp_seq=4 ttl=63 time=117.024 ms
-84 bytes from 10.0.20.136 icmp_seq=5 ttl=63 time=495.382 ms
-84 bytes from 10.0.20.136 icmp_seq=6 ttl=63 time=77.837 ms
-84 bytes from 10.0.20.136 icmp_seq=7 ttl=63 time=86.739 ms
-84 bytes from 10.0.20.136 icmp_seq=8 ttl=63 time=142.468 ms
-84 bytes from 10.0.20.136 icmp_seq=9 ttl=63 time=419.924 ms
-84 bytes from 10.0.20.136 icmp_seq=10 ttl=63 time=217.376 ms
-84 bytes from 10.0.20.136 icmp_seq=11 ttl=63 time=72.324 ms
-84 bytes from 10.0.20.136 icmp_seq=12 ttl=63 time=102.349 ms
-84 bytes from 10.0.20.136 icmp_seq=13 ttl=63 time=346.550 ms
-84 bytes from 10.0.20.136 icmp_seq=14 ttl=63 time=110.217 ms
-84 bytes from 10.0.20.136 icmp_seq=15 ttl=63 time=139.715 ms
-84 bytes from 10.0.20.136 icmp_seq=16 ttl=63 time=131.652 ms
-84 bytes from 10.0.20.136 icmp_seq=17 ttl=63 time=120.304 ms
-84 bytes from 10.0.20.136 icmp_seq=18 ttl=63 time=138.628 ms
-84 bytes from 10.0.20.136 icmp_seq=19 ttl=63 time=330.029 ms
-84 bytes from 10.0.20.136 icmp_seq=20 ttl=63 time=466.759 ms
-84 bytes from 10.0.20.136 icmp_seq=21 ttl=63 time=106.772 ms
-84 bytes from 10.0.20.136 icmp_seq=22 ttl=63 time=183.913 ms
-84 bytes from 10.0.20.136 icmp_seq=23 ttl=63 time=95.582 ms
-84 bytes from 10.0.20.136 icmp_seq=24 ttl=63 time=233.157 ms
-84 bytes from 10.0.20.136 icmp_seq=25 ttl=63 time=469.579 ms
-84 bytes from 10.0.20.136 icmp_seq=26 ttl=63 time=106.102 ms
-84 bytes from 10.0.20.136 icmp_seq=27 ttl=63 time=92.613 ms
-84 bytes from 10.0.20.136 icmp_seq=28 ttl=63 time=130.494 ms
-84 bytes from 10.0.20.136 icmp_seq=29 ttl=63 time=213.513 ms
-84 bytes from 10.0.20.136 icmp_seq=30 ttl=63 time=232.562 ms
-84 bytes from 10.0.20.136 icmp_seq=31 ttl=63 time=96.823 ms
-84 bytes from 10.0.20.136 icmp_seq=32 ttl=63 time=119.574 ms
-84 bytes from 10.0.20.136 icmp_seq=33 ttl=63 time=87.602 ms
-84 bytes from 10.0.20.136 icmp_seq=34 ttl=63 time=121.543 ms
-84 bytes from 10.0.20.136 icmp_seq=35 ttl=63 time=108.050 ms
-84 bytes from 10.0.20.136 icmp_seq=36 ttl=63 time=81.044 ms
-84 bytes from 10.0.20.136 icmp_seq=37 ttl=63 time=165.599 ms
-84 bytes from 10.0.20.136 icmp_seq=38 ttl=63 time=322.959 ms
-84 bytes from 10.0.20.136 icmp_seq=39 ttl=63 time=75.552 ms
-84 bytes from 10.0.20.136 icmp_seq=40 ttl=63 time=98.971 ms
-84 bytes from 10.0.20.136 icmp_seq=41 ttl=63 time=117.051 ms
-84 bytes from 10.0.20.136 icmp_seq=42 ttl=63 time=280.672 ms
-84 bytes from 10.0.20.136 icmp_seq=43 ttl=63 time=737.424 ms
-84 bytes from 10.0.20.136 icmp_seq=44 ttl=63 time=279.461 ms
-84 bytes from 10.0.20.136 icmp_seq=45 ttl=63 time=551.006 ms
-84 bytes from 10.0.20.136 icmp_seq=46 ttl=63 time=127.490 ms
-84 bytes from 10.0.20.136 icmp_seq=47 ttl=63 time=189.269 ms
-84 bytes from 10.0.20.136 icmp_seq=48 ttl=63 time=83.019 ms
-84 bytes from 10.0.20.136 icmp_seq=49 ttl=63 time=76.910 ms
-84 bytes from 10.0.20.136 icmp_seq=50 ttl=63 time=284.802 ms
-84 bytes from 10.0.20.136 icmp_seq=51 ttl=63 time=113.616 ms
-84 bytes from 10.0.20.136 icmp_seq=52 ttl=63 time=94.436 ms
-84 bytes from 10.0.20.136 icmp_seq=53 ttl=63 time=94.515 ms
-84 bytes from 10.0.20.136 icmp_seq=54 ttl=63 time=120.395 ms
-84 bytes from 10.0.20.136 icmp_seq=55 ttl=63 time=174.505 ms
-84 bytes from 10.0.20.136 icmp_seq=56 ttl=63 time=97.831 ms
-84 bytes from 10.0.20.136 icmp_seq=57 ttl=63 time=78.453 ms
-84 bytes from 10.0.20.136 icmp_seq=58 ttl=63 time=181.128 ms
-84 bytes from 10.0.20.136 icmp_seq=59 ttl=63 time=105.306 ms
-84 bytes from 10.0.20.136 icmp_seq=60 ttl=63 time=75.128 ms
-84 bytes from 10.0.20.136 icmp_seq=61 ttl=63 time=223.956 ms
-84 bytes from 10.0.20.136 icmp_seq=62 ttl=63 time=84.896 ms
-84 bytes from 10.0.20.136 icmp_seq=63 ttl=63 time=241.889 ms
-84 bytes from 10.0.20.136 icmp_seq=64 ttl=63 time=192.289 ms
-84 bytes from 10.0.20.136 icmp_seq=65 ttl=63 time=117.704 ms
-84 bytes from 10.0.20.136 icmp_seq=66 ttl=63 time=180.172 ms
-84 bytes from 10.0.20.136 icmp_seq=67 ttl=63 time=179.119 ms
-84 bytes from 10.0.20.136 icmp_seq=68 ttl=63 time=119.247 ms
-84 bytes from 10.0.20.136 icmp_seq=69 ttl=63 time=102.856 ms
-84 bytes from 10.0.20.136 icmp_seq=70 ttl=63 time=198.327 ms
-84 bytes from 10.0.20.136 icmp_seq=71 ttl=63 time=448.843 ms
-84 bytes from 10.0.20.136 icmp_seq=72 ttl=63 time=97.763 ms
-84 bytes from 10.0.20.136 icmp_seq=73 ttl=63 time=112.578 ms
-84 bytes from 10.0.20.136 icmp_seq=74 ttl=63 time=80.479 ms
-84 bytes from 10.0.20.136 icmp_seq=75 ttl=63 time=256.574 ms
-84 bytes from 10.0.20.136 icmp_seq=76 ttl=63 time=565.074 ms
-84 bytes from 10.0.20.136 icmp_seq=77 ttl=63 time=264.560 ms
-84 bytes from 10.0.20.136 icmp_seq=78 ttl=63 time=74.024 ms
-84 bytes from 10.0.20.136 icmp_seq=79 ttl=63 time=105.799 ms
-84 bytes from 10.0.20.136 icmp_seq=80 ttl=63 time=88.311 ms
-84 bytes from 10.0.20.136 icmp_seq=81 ttl=63 time=362.690 ms
-84 bytes from 10.0.20.136 icmp_seq=82 ttl=63 time=114.114 ms
-84 bytes from 10.0.20.136 icmp_seq=83 ttl=63 time=96.611 ms
-84 bytes from 10.0.20.136 icmp_seq=84 ttl=63 time=170.464 ms
-84 bytes from 10.0.20.136 icmp_seq=85 ttl=63 time=163.018 ms
-84 bytes from 10.0.20.136 icmp_seq=86 ttl=63 time=249.598 ms
-84 bytes from 10.0.20.136 icmp_seq=87 ttl=63 time=93.330 ms
-84 bytes from 10.0.20.136 icmp_seq=88 ttl=63 time=73.768 ms
-84 bytes from 10.0.20.136 icmp_seq=89 ttl=63 time=84.765 ms
-84 bytes from 10.0.20.136 icmp_seq=90 ttl=63 time=114.695 ms
-84 bytes from 10.0.20.136 icmp_seq=91 ttl=63 time=99.407 ms
-84 bytes from 10.0.20.136 icmp_seq=92 ttl=63 time=156.649 ms
-84 bytes from 10.0.20.136 icmp_seq=93 ttl=63 time=86.445 ms
-84 bytes from 10.0.20.136 icmp_seq=94 ttl=63 time=211.476 ms
-84 bytes from 10.0.20.136 icmp_seq=95 ttl=63 time=105.616 ms
-84 bytes from 10.0.20.136 icmp_seq=96 ttl=63 time=236.409 ms
-84 bytes from 10.0.20.136 icmp_seq=97 ttl=63 time=97.790 ms
-84 bytes from 10.0.20.136 icmp_seq=98 ttl=63 time=231.176 ms
-84 bytes from 10.0.20.136 icmp_seq=99 ttl=63 time=136.606 ms
-84 bytes from 10.0.20.136 icmp_seq=100 ttl=63 time=99.149 ms
-84 bytes from 10.0.20.136 icmp_seq=101 ttl=63 time=181.228 ms
-84 bytes from 10.0.20.136 icmp_seq=102 ttl=63 time=327.566 ms
-84 bytes from 10.0.20.136 icmp_seq=103 ttl=63 time=85.620 ms
-84 bytes from 10.0.20.136 icmp_seq=104 ttl=63 time=153.914 ms
-84 bytes from 10.0.20.136 icmp_seq=105 ttl=63 time=119.805 ms
-84 bytes from 10.0.20.136 icmp_seq=106 ttl=63 time=89.802 ms
-84 bytes from 10.0.20.136 icmp_seq=107 ttl=63 time=411.836 ms
-84 bytes from 10.0.20.136 icmp_seq=108 ttl=63 time=75.606 ms
-84 bytes from 10.0.20.136 icmp_seq=109 ttl=63 time=108.132 ms
-84 bytes from 10.0.20.136 icmp_seq=110 ttl=63 time=90.648 ms
-84 bytes from 10.0.20.136 icmp_seq=111 ttl=63 time=187.602 ms
-84 bytes from 10.0.20.136 icmp_seq=112 ttl=63 time=431.538 ms
-84 bytes from 10.0.20.136 icmp_seq=113 ttl=63 time=138.226 ms
-84 bytes from 10.0.20.136 icmp_seq=114 ttl=63 time=141.218 ms
-84 bytes from 10.0.20.136 icmp_seq=115 ttl=63 time=205.307 ms
-84 bytes from 10.0.20.136 icmp_seq=116 ttl=63 time=161.155 ms
-84 bytes from 10.0.20.136 icmp_seq=117 ttl=63 time=245.151 ms
-84 bytes from 10.0.20.136 icmp_seq=118 ttl=63 time=80.029 ms
-84 bytes from 10.0.20.136 icmp_seq=119 ttl=63 time=109.418 ms
-84 bytes from 10.0.20.136 icmp_seq=120 ttl=63 time=82.729 ms
-84 bytes from 10.0.20.136 icmp_seq=121 ttl=63 time=94.180 ms
-84 bytes from 10.0.20.136 icmp_seq=122 ttl=63 time=76.683 ms
-84 bytes from 10.0.20.136 icmp_seq=123 ttl=63 time=79.777 ms
-84 bytes from 10.0.20.136 icmp_seq=124 ttl=63 time=290.946 ms
-84 bytes from 10.0.20.136 icmp_seq=125 ttl=63 time=203.400 ms
-84 bytes from 10.0.20.136 icmp_seq=126 ttl=63 time=82.875 ms
-84 bytes from 10.0.20.136 icmp_seq=127 ttl=63 time=138.597 ms
-84 bytes from 10.0.20.136 icmp_seq=128 ttl=63 time=101.403 ms
-84 bytes from 10.0.20.136 icmp_seq=129 ttl=63 time=180.737 ms
-84 bytes from 10.0.20.136 icmp_seq=130 ttl=63 time=133.653 ms
-84 bytes from 10.0.20.136 icmp_seq=131 ttl=63 time=74.299 ms
-84 bytes from 10.0.20.136 icmp_seq=132 ttl=63 time=124.123 ms
-84 bytes from 10.0.20.136 icmp_seq=133 ttl=63 time=440.362 ms
-84 bytes from 10.0.20.136 icmp_seq=134 ttl=63 time=94.092 ms
-84 bytes from 10.0.20.136 icmp_seq=135 ttl=63 time=85.138 ms
-84 bytes from 10.0.20.136 icmp_seq=136 ttl=63 time=187.209 ms
-84 bytes from 10.0.20.136 icmp_seq=137 ttl=63 time=201.809 ms
-84 bytes from 10.0.20.136 icmp_seq=138 ttl=63 time=451.392 ms
-84 bytes from 10.0.20.136 icmp_seq=139 ttl=63 time=124.218 ms
-84 bytes from 10.0.20.136 icmp_seq=140 ttl=63 time=94.906 ms
-84 bytes from 10.0.20.136 icmp_seq=141 ttl=63 time=78.304 ms
-84 bytes from 10.0.20.136 icmp_seq=142 ttl=63 time=134.573 ms
-84 bytes from 10.0.20.136 icmp_seq=143 ttl=63 time=427.886 ms
-84 bytes from 10.0.20.136 icmp_seq=144 ttl=63 time=82.521 ms
-84 bytes from 10.0.20.136 icmp_seq=145 ttl=63 time=81.484 ms
-84 bytes from 10.0.20.136 icmp_seq=146 ttl=63 time=95.459 ms
-84 bytes from 10.0.20.136 icmp_seq=147 ttl=63 time=212.807 ms
-84 bytes from 10.0.20.136 icmp_seq=148 ttl=63 time=100.139 ms
-84 bytes from 10.0.20.136 icmp_seq=149 ttl=63 time=140.989 ms
-84 bytes from 10.0.20.136 icmp_seq=150 ttl=63 time=95.776 ms
-84 bytes from 10.0.20.136 icmp_seq=151 ttl=63 time=356.593 ms
-84 bytes from 10.0.20.136 icmp_seq=152 ttl=63 time=102.349 ms
-84 bytes from 10.0.20.136 icmp_seq=153 ttl=63 time=106.033 ms
-84 bytes from 10.0.20.136 icmp_seq=154 ttl=63 time=117.747 ms
-84 bytes from 10.0.20.136 icmp_seq=155 ttl=63 time=93.756 ms
-84 bytes from 10.0.20.136 icmp_seq=156 ttl=63 time=427.409 ms
-84 bytes from 10.0.20.136 icmp_seq=157 ttl=63 time=131.429 ms
-84 bytes from 10.0.20.136 icmp_seq=158 ttl=63 time=74.009 ms
-84 bytes from 10.0.20.136 icmp_seq=159 ttl=63 time=76.452 ms
-84 bytes from 10.0.20.136 icmp_seq=160 ttl=63 time=234.607 ms
-84 bytes from 10.0.20.136 icmp_seq=161 ttl=63 time=260.345 ms
-84 bytes from 10.0.20.136 icmp_seq=162 ttl=63 time=114.283 ms
-84 bytes from 10.0.20.136 icmp_seq=163 ttl=63 time=129.062 ms
-84 bytes from 10.0.20.136 icmp_seq=164 ttl=63 time=135.581 ms
-84 bytes from 10.0.20.136 icmp_seq=165 ttl=63 time=112.869 ms
-84 bytes from 10.0.20.136 icmp_seq=166 ttl=63 time=600.118 ms
-84 bytes from 10.0.20.136 icmp_seq=167 ttl=63 time=93.591 ms
-84 bytes from 10.0.20.136 icmp_seq=168 ttl=63 time=91.994 ms
-84 bytes from 10.0.20.136 icmp_seq=169 ttl=63 time=157.649 ms
-84 bytes from 10.0.20.136 icmp_seq=170 ttl=63 time=97.102 ms
-84 bytes from 10.0.20.136 icmp_seq=171 ttl=63 time=78.368 ms
-84 bytes from 10.0.20.136 icmp_seq=172 ttl=63 time=123.792 ms
-84 bytes from 10.0.20.136 icmp_seq=173 ttl=63 time=141.140 ms
-84 bytes from 10.0.20.136 icmp_seq=174 ttl=63 time=404.222 ms
-84 bytes from 10.0.20.136 icmp_seq=175 ttl=63 time=97.450 ms
-84 bytes from 10.0.20.136 icmp_seq=176 ttl=63 time=92.535 ms
-84 bytes from 10.0.20.136 icmp_seq=177 ttl=63 time=120.451 ms
-84 bytes from 10.0.20.136 icmp_seq=178 ttl=63 time=306.298 ms
-84 bytes from 10.0.20.136 icmp_seq=179 ttl=63 time=422.853 ms
-84 bytes from 10.0.20.136 icmp_seq=180 ttl=63 time=116.157 ms
-84 bytes from 10.0.20.136 icmp_seq=181 ttl=63 time=89.158 ms
-84 bytes from 10.0.20.136 icmp_seq=182 ttl=63 time=132.642 ms
-84 bytes from 10.0.20.136 icmp_seq=183 ttl=63 time=183.863 ms
-84 bytes from 10.0.20.136 icmp_seq=184 ttl=63 time=544.678 ms
-84 bytes from 10.0.20.136 icmp_seq=185 ttl=63 time=80.567 ms
-84 bytes from 10.0.20.136 icmp_seq=186 ttl=63 time=86.996 ms
-84 bytes from 10.0.20.136 icmp_seq=187 ttl=63 time=119.928 ms
-84 bytes from 10.0.20.136 icmp_seq=188 ttl=63 time=155.115 ms
-84 bytes from 10.0.20.136 icmp_seq=189 ttl=63 time=243.973 ms
-84 bytes from 10.0.20.136 icmp_seq=190 ttl=63 time=138.986 ms
-84 bytes from 10.0.20.136 icmp_seq=191 ttl=63 time=76.293 ms
-84 bytes from 10.0.20.136 icmp_seq=192 ttl=63 time=79.974 ms
-84 bytes from 10.0.20.136 icmp_seq=193 ttl=63 time=103.666 ms
-84 bytes from 10.0.20.136 icmp_seq=194 ttl=63 time=184.821 ms
-84 bytes from 10.0.20.136 icmp_seq=195 ttl=63 time=153.543 ms
-84 bytes from 10.0.20.136 icmp_seq=196 ttl=63 time=97.833 ms
-84 bytes from 10.0.20.136 icmp_seq=197 ttl=63 time=408.573 ms
-84 bytes from 10.0.20.136 icmp_seq=198 ttl=63 time=93.543 ms
-84 bytes from 10.0.20.136 icmp_seq=199 ttl=63 time=240.846 ms
-10.0.20.136 icmp_seq=200 timeout
-10.0.20.136 icmp_seq=201 timeout
-10.0.20.136 icmp_seq=202 timeout
-10.0.20.136 icmp_seq=203 timeout
-10.0.20.136 icmp_seq=204 timeout
-10.0.20.136 icmp_seq=205 timeout
-10.0.20.136 icmp_seq=206 timeout
-10.0.20.136 icmp_seq=207 timeout
-10.0.20.136 icmp_seq=208 timeout
-10.0.20.136 icmp_seq=209 timeout
-10.0.20.136 icmp_seq=210 timeout
-10.0.20.136 icmp_seq=211 timeout
-10.0.20.136 icmp_seq=212 timeout
-10.0.20.136 icmp_seq=213 timeout
-84 bytes from 10.0.20.136 icmp_seq=214 ttl=63 time=194.452 ms
-84 bytes from 10.0.20.136 icmp_seq=215 ttl=63 time=110.414 ms
-84 bytes from 10.0.20.136 icmp_seq=216 ttl=63 time=105.594 ms
-84 bytes from 10.0.20.136 icmp_seq=217 ttl=63 time=99.965 ms
-84 bytes from 10.0.20.136 icmp_seq=218 ttl=63 time=171.739 ms
-84 bytes from 10.0.20.136 icmp_seq=219 ttl=63 time=700.054 ms
-10.0.20.136 icmp_seq=220 timeout
-10.0.20.136 icmp_seq=221 timeout
-10.0.20.136 icmp_seq=222 timeout
-84 bytes from 10.0.20.136 icmp_seq=223 ttl=63 time=300.662 ms
-84 bytes from 10.0.20.136 icmp_seq=224 ttl=63 time=55.873 ms
-84 bytes from 10.0.20.136 icmp_seq=225 ttl=63 time=38.706 ms
-84 bytes from 10.0.20.136 icmp_seq=226 ttl=63 time=92.516 ms
-10.0.20.136 icmp_seq=227 timeout
-10.0.20.136 icmp_seq=228 timeout
-84 bytes from 10.0.20.136 icmp_seq=229 ttl=63 time=185.637 ms
-84 bytes from 10.0.20.136 icmp_seq=230 ttl=63 time=182.325 ms
-84 bytes from 10.0.20.136 icmp_seq=231 ttl=63 time=131.785 ms
-84 bytes from 10.0.20.136 icmp_seq=232 ttl=63 time=473.003 ms
-84 bytes from 10.0.20.136 icmp_seq=233 ttl=63 time=91.998 ms
-84 bytes from 10.0.20.136 icmp_seq=234 ttl=63 time=96.504 ms
-84 bytes from 10.0.20.136 icmp_seq=235 ttl=63 time=123.998 ms
-84 bytes from 10.0.20.136 icmp_seq=236 ttl=63 time=273.405 ms
-84 bytes from 10.0.20.136 icmp_seq=237 ttl=63 time=407.223 ms
-84 bytes from 10.0.20.136 icmp_seq=238 ttl=63 time=89.457 ms
-84 bytes from 10.0.20.136 icmp_seq=239 ttl=63 time=113.066 ms
-84 bytes from 10.0.20.136 icmp_seq=240 ttl=63 time=188.995 ms
-84 bytes from 10.0.20.136 icmp_seq=241 ttl=63 time=535.348 ms
-10.0.20.136 icmp_seq=242 timeout
-10.0.20.136 icmp_seq=243 timeout
-10.0.20.136 icmp_seq=244 timeout
-10.0.20.136 icmp_seq=245 timeout
-10.0.20.136 icmp_seq=246 timeout
-10.0.20.136 icmp_seq=247 timeout
-10.0.20.136 icmp_seq=248 timeout
-10.0.20.136 icmp_seq=249 timeout
-84 bytes from 10.0.20.136 icmp_seq=250 ttl=63 time=70.773 ms
-84 bytes from 10.0.20.136 icmp_seq=251 ttl=63 time=120.699 ms
-10.0.20.136 icmp_seq=252 timeout
-84 bytes from 10.0.20.136 icmp_seq=253 ttl=63 time=73.015 ms
-84 bytes from 10.0.20.136 icmp_seq=254 ttl=63 time=69.100 ms
-84 bytes from 10.0.20.136 icmp_seq=255 ttl=63 time=365.475 ms
-84 bytes from 10.0.20.136 icmp_seq=256 ttl=63 time=137.149 ms
-84 bytes from 10.0.20.136 icmp_seq=257 ttl=63 time=80.558 ms
-84 bytes from 10.0.20.136 icmp_seq=258 ttl=63 time=71.882 ms
-84 bytes from 10.0.20.136 icmp_seq=259 ttl=63 time=236.028 ms
-84 bytes from 10.0.20.136 icmp_seq=260 ttl=63 time=81.810 ms
-84 bytes from 10.0.20.136 icmp_seq=261 ttl=63 time=72.242 ms
-84 bytes from 10.0.20.136 icmp_seq=262 ttl=63 time=93.376 ms
-84 bytes from 10.0.20.136 icmp_seq=263 ttl=63 time=149.738 ms
-84 bytes from 10.0.20.136 icmp_seq=264 ttl=63 time=202.861 ms
-84 bytes from 10.0.20.136 icmp_seq=265 ttl=63 time=92.770 ms
+VPCS> ping 8.8.8.8
+
+84 bytes from 8.8.8.8 icmp_seq=1 ttl=253 time=73.579 ms
+84 bytes from 8.8.8.8 icmp_seq=2 ttl=253 time=101.882 ms
+84 bytes from 8.8.8.8 icmp_seq=3 ttl=253 time=54.466 ms
+84 bytes from 8.8.8.8 icmp_seq=4 ttl=253 time=67.399 ms
+84 bytes from 8.8.8.8 icmp_seq=5 ttl=253 time=104.196 ms
+
+VPCS>
 
 
+VPCS> ping 10.0.12.1
+
+84 bytes from 10.0.12.1 icmp_seq=1 ttl=253 time=120.849 ms
+84 bytes from 10.0.12.1 icmp_seq=2 ttl=253 time=135.698 ms
+84 bytes from 10.0.12.1 icmp_seq=3 ttl=253 time=315.845 ms
+84 bytes from 10.0.12.1 icmp_seq=4 ttl=253 time=613.961 ms
+84 bytes from 10.0.12.1 icmp_seq=5 ttl=253 time=267.245 ms
+
+VPCS>
+
+
+VPCS> ping 10.0.20.136
+
+84 bytes from 10.0.20.136 icmp_seq=1 ttl=62 time=185.276 ms
+84 bytes from 10.0.20.136 icmp_seq=2 ttl=62 time=74.198 ms
+84 bytes from 10.0.20.136 icmp_seq=3 ttl=62 time=84.346 ms
+84 bytes from 10.0.20.136 icmp_seq=4 ttl=62 time=84.078 ms
+84 bytes from 10.0.20.136 icmp_seq=5 ttl=62 time=309.229 ms
+
+VPCS>
+
+
+VPCS> ping 8.8.8.8
+
+84 bytes from 8.8.8.8 icmp_seq=1 ttl=253 time=233.135 ms
+84 bytes from 8.8.8.8 icmp_seq=2 ttl=253 time=110.507 ms
+84 bytes from 8.8.8.8 icmp_seq=3 ttl=253 time=60.427 ms
+84 bytes from 8.8.8.8 icmp_seq=4 ttl=253 time=93.117 ms
+84 bytes from 8.8.8.8 icmp_seq=5 ttl=253 time=155.125 ms
+
+VPCS>
 
 
 ```
