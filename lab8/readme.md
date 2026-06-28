@@ -2790,7 +2790,7 @@ Group  Port-channel  Protocol    Ports
 <details>
   <summary>Дамп трафика с g0/0 на R002</summary>
   
-![Дамп трафика](./images/wireshark1.png "Дамп трафика")
+![Дамп трафика](./images/wireshark2.png "Дамп трафика")
 
 </details>
 
