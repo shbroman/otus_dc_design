@@ -2711,6 +2711,22 @@ DC01-R002#
 
 ```
 
+DC01-R002#sh int status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Gi0/0                        suspended    trunk      a-full   auto RJ45
+Gi0/1                        connected    trunk      a-full   auto RJ45
+Gi0/2                        notconnect   1          a-full   auto RJ45
+Gi0/3                        notconnect   1          a-full   auto RJ45
+Gi1/0                        notconnect   1          a-full   auto RJ45
+Gi1/1                        notconnect   1          a-full   auto RJ45
+Gi1/2                        notconnect   1          a-full   auto RJ45
+Gi1/3                        notconnect   1          a-full   auto RJ45
+Po1                          connected    trunk      a-full   auto
+DC01-R002#
+
+
+
 DC01-R002#sh ip int brie
 Interface              IP-Address      OK? Method Status                Protocol
 GigabitEthernet0/0     unassigned      YES unset  up                    down
