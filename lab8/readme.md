@@ -2778,5 +2778,12 @@ Group  Port-channel  Protocol    Ports
 
 Ниже дамп трафика снятый с порта g0/1 на DC01-R002, показывающий что роутер даже не пытается коммуницировать через поднятый интерфейс
 
-<summary>![Дамп трафика](./images/wireshark1.png "Дамп трафика")</summary>
+
+<details>
+  <summary>Дамп трафика с g0/1 на R002</summary>
+  
+![Дамп трафика](./images/wireshark1.png "Дамп трафика")
+
+</details>
+
 
