@@ -2786,4 +2786,12 @@ Group  Port-channel  Protocol    Ports
 
 </details>
 
+Посмотрим теперь что на g0/0 на R002
+<details>
+  <summary>Дамп трафика с g0/0 на R002</summary>
+  
+![Дамп трафика](./images/wireshark1.png "Дамп трафика")
 
+</details>
+
+R002 упорно шлёт трафик в SUSPENDED интерфейс...
