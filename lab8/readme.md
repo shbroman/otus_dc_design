@@ -2704,3 +2704,75 @@ DC01-R002#
 </details>
 
 
+Что касается LACP, у меня не получилось активировать корректную работу. образ циско упорно не посылает данные в рабочий линк.
+
+<details>
+<summary><b>DC01-R002:</b></summary>
+
+```
+
+DC01-R002#sh ip int brie
+Interface              IP-Address      OK? Method Status                Protocol
+GigabitEthernet0/0     unassigned      YES unset  up                    down
+GigabitEthernet0/1     unassigned      YES unset  up                    up
+GigabitEthernet0/2     unassigned      YES unset  down                  down
+GigabitEthernet0/3     unassigned      YES unset  down                  down
+GigabitEthernet1/0     unassigned      YES unset  down                  down
+GigabitEthernet1/1     unassigned      YES unset  down                  down
+GigabitEthernet1/2     unassigned      YES unset  down                  down
+GigabitEthernet1/3     unassigned      YES unset  down                  down
+Port-channel1          unassigned      YES unset  up                    up
+Vlan12                 10.0.12.1       YES NVRAM  up                    up
+Vlan1011               10.1.3.14       YES NVRAM  up                    up
+Vlan1012               10.1.3.22       YES NVRAM  up                    up
+DC01-R002#ping 10.1.3.10
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.1.3.10, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+DC01-R002#ping 10.1.3.10
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.1.3.10, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+DC01-R002#ping 10.1.3.22
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.1.3.22, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 2/6/15 ms
+DC01-R002#ping 10.1.3.18
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.1.3.18, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+DC01-R002#show ethe
+DC01-R002#show etherc
+DC01-R002#show etherchannel sum
+DC01-R002#show etherchannel summary
+Flags:  D - down        P - bundled in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      N - not in use, no aggregation
+        f - failed to allocate aggregator
+
+        M - not in use, minimum links not met
+        m - not in use, port not aggregated due to minimum links not met
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+
+        A - formed by Auto LAG
+
+
+Number of channel-groups in use: 1
+Number of aggregators:           1
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+1      Po1(SU)         LACP      Gi0/0(s)    Gi0/1(P)
+
+```
+</details>
+Ниже дамп трафика снятый с порта g0/1 на DC01-R002, показывающий что роутер даже не пытается коммуницировать через поднятый интерфейс
+![Дамп трафика](./images/wireshark1.png "Дамп трафика")
