@@ -2352,7 +2352,7 @@ VPCS>
 ```
 </details>
 
-### Дополнительное задание:
+### Дополнительное задание 1:
 Рассматриваем сценарий - один ли бордер-лифов упал (выключаем LSW007). Ввиду особенностей Pnetlab на DC01-R002 порт g0/0 в сторону LSW007 не упал и находился в состоянии UP, был переведен вручную в Shutdown
 
 Визуализация:
@@ -2811,3 +2811,488 @@ Group  Port-channel  Protocol    Ports
 </details>
 
 R002 упорно шлёт трафик в SUSPENDED интерфейс...
+
+
+
+### Дополнительное задание 2:
+Необходимо заменить DC01-R002 на иное оборудование с поддержкой LACP в лаборатории. Меняем на Arista Veos 4.33, подключем к LSW007 и 008 в порты eth4, настраиваем аналогичный port-channel как до R002. на R003 настройки используем, аналогичные на R002
+
+Визуализация:
+
+
+![Схема](./images/scheme3.png "Визуализация")
+
+
+<details>
+<summary><b>Диагностика на SRV12-20:</b></summary>
+
+```
+
+VPCS> show arp
+
+50:bb:45:29:e2:76  10.0.12.1 expires in 113 seconds
+
+VPCS> ping 10.0.12.1
+
+84 bytes from 10.0.12.1 icmp_seq=1 ttl=64 time=108.133 ms
+84 bytes from 10.0.12.1 icmp_seq=2 ttl=64 time=144.043 ms
+84 bytes from 10.0.12.1 icmp_seq=3 ttl=64 time=72.294 ms
+84 bytes from 10.0.12.1 icmp_seq=4 ttl=64 time=54.433 ms
+84 bytes from 10.0.12.1 icmp_seq=5 ttl=64 time=65.750 ms
+
+VPCS>
+VPCS> ping 10.0.10.1
+
+84 bytes from 10.0.10.1 icmp_seq=1 ttl=63 time=74.327 ms
+^C
+VPCS> ping 10.0.10.10
+
+84 bytes from 10.0.10.10 icmp_seq=1 ttl=61 time=627.244 ms
+^C
+VPCS> ping 10.0.20.136
+
+84 bytes from 10.0.20.136 icmp_seq=1 ttl=61 time=147.629 ms
+84 bytes from 10.0.20.136 icmp_seq=2 ttl=61 time=188.678 ms
+^C
+
+```
+
+</details>
+
+
+<details>
+<summary><b>Диагностика на DC01-LSW007:</b></summary>
+
+```
+
+```
+
+</details>
+
+
+<details>
+<summary><b>Диагностика на:</b></summary>
+
+```
+
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Диагностика на:</b></summary>
+
+```
+
+DC01-LSW007#show bgp evpn route-type ip-prefix 10.0.10.10/32
+BGP routing table information for VRF default
+Router identifier 10.255.254.7, local AS number 4200000007
+BGP routing table entry for ip-prefix 10.0.10.10/32, Route Distinguisher: 4200000007:4095
+ Paths: 1 available
+  65001 65001 64512 4200000001
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, best
+      Extended Community: Route-Target-AS:64512:4095 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:27:32:0f:4a:c1
+      VNI: 14095
+
+
+DC01-LSW007#show bgp evpn route-type mac-ip 10.0.10.10 detail
+BGP routing table information for VRF default
+Router identifier 10.255.254.7, local AS number 4200000007
+BGP routing table entry for mac-ip 0050.7966.6829 10.0.10.10, Route Distinguisher: 4200000001:10010
+ Paths: 2 available
+  64512 4200000001
+    10.255.254.101 from 10.255.253.212 (10.255.255.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:64512:10 Route-Target-AS:64512:4096 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:88:7f:51:e6:16
+      VNI: 10010 L3 VNI: 14096 ESI: 0000:0000:0000:0000:0000
+  64512 4200000001
+    10.255.254.101 from 10.255.253.112 (10.255.255.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:64512:10 Route-Target-AS:64512:4096 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:88:7f:51:e6:16
+      VNI: 10010 L3 VNI: 14096 ESI: 0000:0000:0000:0000:0000
+
+```
+
+</details>
+
+
+
+
+<details>
+<summary><b>Диагностика на DC01-LSW008:</b></summary>
+
+```
+DC01-LSW008#show bgp evpn route-type ip-prefix 10.0.10.10/32
+BGP routing table information for VRF default
+Router identifier 10.255.254.8, local AS number 4200000008
+BGP routing table entry for ip-prefix 10.0.10.10/32, Route Distinguisher: 4200000008:4095
+ Paths: 1 available
+  65001 4200000007 64512 4200000001
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, best
+      Extended Community: Route-Target-AS:64512:4095 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:73:5b:a2:b9:e0
+      VNI: 14095
+BGP routing table entry for ip-prefix 10.0.10.10/32, Route Distinguisher: 4200000008:4096
+ Paths: 1 available
+  65001 4200000007 64512 4200000001
+    - from - (0.0.0.0)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, best
+      Extended Community: Route-Target-AS:64512:4096 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:73:5b:a2:b9:e0
+      VNI: 14096
+DC01-LSW008#show bgp evpn route-type mac-ip 10.0.10.10 detail
+BGP routing table information for VRF default
+Router identifier 10.255.254.8, local AS number 4200000008
+BGP routing table entry for mac-ip 0050.7966.6829 10.0.10.10, Route Distinguisher: 4200000001:10010
+ Paths: 2 available
+  64512 4200000001
+    10.255.254.101 from 10.255.253.214 (10.255.255.2)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP head, ECMP, best, ECMP contributor
+      Extended Community: Route-Target-AS:64512:10 Route-Target-AS:64512:4096 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:88:7f:51:e6:16
+      VNI: 10010 L3 VNI: 14096 ESI: 0000:0000:0000:0000:0000
+  64512 4200000001
+    10.255.254.101 from 10.255.253.114 (10.255.255.1)
+      Origin IGP, metric -, localpref 100, weight 0, tag 0, valid, external, ECMP, ECMP contributor
+      Extended Community: Route-Target-AS:64512:10 Route-Target-AS:64512:4096 TunnelEncap:tunnelTypeVxlan EvpnRouterMac:50:88:7f:51:e6:16
+      VNI: 10010 L3 VNI: 14096 ESI: 0000:0000:0000:0000:0000
+
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Диагностика на DC01-R003:</b></summary>
+
+```
+DC01-R003# sh bgp summary
+BGP summary information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Neighbor           AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+--------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.1.3.9   4200000007 Established   IPv4 Unicast            Negotiated              1          1
+10.1.3.10  4200000008 Established   IPv4 Unicast            Negotiated              2          2
+10.1.3.17  4200000007 Established   IPv4 Unicast            Negotiated              3          3
+10.1.3.18  4200000008 Established   IPv4 Unicast            Negotiated              7          7
+DC01-R003#show ip route
+
+VRF: default
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort is not set
+
+ B E      10.0.10.0/24 [200/0]
+           via 10.1.3.17, Vlan1012
+ C        10.0.12.0/24
+           directly connected, Vlan12
+ B E      10.0.20.0/24 [200/0]
+           via 10.1.3.17, Vlan1012
+ C        10.1.3.8/29
+           directly connected, Vlan1011
+ C        10.1.3.16/29
+           directly connected, Vlan1012
+
+DC01-R003#show ip bgp neighbors 10.1.3.9 advertised-routes
+BGP routing table information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast, q - Queued for advertisement
+                    % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      0.0.0.0/0              10.1.3.14             -       -          -       -       65001 ?
+ * >      10.0.10.0/24           10.1.3.14             -       -          -       -       65001 65001 i
+ * >      10.0.10.10/32          10.1.3.14             -       -          -       -       65001 65001 64512 4200000001 i
+ * >      10.0.12.0/24           10.1.3.14             -       -          -       -       65001 i
+ * >      10.0.20.0/24           10.1.3.14             -       -          -       -       65001 65001 i
+ * >      10.0.20.136/32         10.1.3.14             -       -          -       -       65001 65001 64512 4200000003 i
+ * >      10.1.3.8/29            10.1.3.14             -       -          -       -       65001 i
+ * >      10.1.3.16/29           10.1.3.14             -       -          -       -       65001 i
+DC01-R003#show ip bgp neighbors 10.1.3.17 advertised-routes
+BGP routing table information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast, q - Queued for advertisement
+                    % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      10.0.12.0/24           10.1.3.22             -       -          -       -       65001 i
+ * >      10.1.3.0/30            10.1.3.22             -       -          -       -       65001 65001 64512 4200000002 i
+ * >      10.1.3.8/29            10.1.3.22             -       -          -       -       65001 i
+ * >      10.1.3.16/29           10.1.3.22             -       -          -       -       65001 i
+DC01-R003#show ip bgp
+BGP routing table information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      10.0.10.0/24           10.1.3.17             0       -          100     0       4200000007 i
+ *        10.0.10.0/24           10.1.3.18             0       -          100     0       4200000008 i
+ * >      10.0.10.10/32          10.1.3.17             0       -          100     0       4200000007 64512 4200000001 i
+ *        10.0.10.10/32          10.1.3.18             0       -          100     0       4200000008 64512 4200000001 i
+ * >      10.0.12.0/24           -                     -       -          -       0       i
+ * >      10.0.20.0/24           10.1.3.17             0       -          100     0       4200000007 i
+ *        10.0.20.0/24           10.1.3.18             0       -          100     0       4200000008 i
+ * >      10.0.20.136/32         10.1.3.17             0       -          100     0       4200000007 64512 4200000003 i
+ *        10.0.20.136/32         10.1.3.18             0       -          100     0       4200000008 64512 4200000003 i
+ * >      10.1.3.0/30            10.1.3.9              0       -          100     0       4200000007 64512 4200000002 i
+ *        10.1.3.0/30            10.1.3.10             0       -          100     0       4200000008 64512 4200000002 i
+ * >      10.1.3.8/29            -                     -       -          -       0       i
+ *        10.1.3.8/29            10.1.3.9              0       -          100     0       4200000007 i
+ *        10.1.3.8/29            10.1.3.10             0       -          100     0       4200000008 i
+ * >      10.1.3.16/29           -                     -       -          -       0       i
+ *        10.1.3.16/29           10.1.3.17             0       -          100     0       4200000007 i
+ *        10.1.3.16/29           10.1.3.18             0       -          100     0       4200000008 i
+
+```
+
+</details>
+
+Роутер перезаписывает ASN соседа в фабрике, если маршрут пришёл от соседа с другого VRF на свой, во избежание прописывания as-allowin-1 на LSW007 и 008.
+Выключаем LSW007.
+
+
+<details>
+<summary><b>Диагностика на DC01-LSW02:</b></summary>
+
+```
+DC01-LSW002#show bgp evpn vni 14095
+BGP routing table information for VRF default
+Router identifier 10.255.254.2, local AS number 4200000002
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.10.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.12.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.0.20.0/24
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 4200000007 i
+ * >      RD: 4200000002:4095 ip-prefix 10.1.3.0/30
+                                 -                     -       -       0       i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.8/29
+                                 10.255.254.108        -       100     0       64512 4200000008 i
+ * >Ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+ *  ec    RD: 4200000008:4095 ip-prefix 10.1.3.16/29
+                                 10.255.254.108        -       100     0       64512 4200000008 65001 i
+DC01-LSW002#
+
+```
+
+</details>
+
+
+
+
+<details>
+<summary><b>Диагностика на SRV12-20:</b></summary>
+
+```
+
+VPCS> ping 10.0.10.10
+
+84 bytes from 10.0.10.10 icmp_seq=1 ttl=61 time=192.647 ms
+84 bytes from 10.0.10.10 icmp_seq=2 ttl=61 time=86.610 ms
+84 bytes from 10.0.10.10 icmp_seq=3 ttl=61 time=154.499 ms
+84 bytes from 10.0.10.10 icmp_seq=4 ttl=61 time=90.251 ms
+84 bytes from 10.0.10.10 icmp_seq=5 ttl=61 time=81.021 ms
+
+VPCS> ping 10.0.20.136
+
+84 bytes from 10.0.20.136 icmp_seq=1 ttl=62 time=523.088 ms
+84 bytes from 10.0.20.136 icmp_seq=2 ttl=62 time=477.111 ms
+84 bytes from 10.0.20.136 icmp_seq=3 ttl=62 time=149.095 ms
+84 bytes from 10.0.20.136 icmp_seq=4 ttl=62 time=204.414 ms
+10.0.20.136 icmp_seq=5 timeout
+
+VPCS> ping 10.0.20.136
+
+84 bytes from 10.0.20.136 icmp_seq=1 ttl=61 time=264.843 ms
+84 bytes from 10.0.20.136 icmp_seq=2 ttl=61 time=141.154 ms
+84 bytes from 10.0.20.136 icmp_seq=3 ttl=61 time=170.123 ms
+84 bytes from 10.0.20.136 icmp_seq=4 ttl=61 time=120.259 ms
+84 bytes from 10.0.20.136 icmp_seq=5 ttl=61 time=123.338 ms
+
+
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Диагностика на DC01-R003:</b></summary>
+
+```
+
+DC01-R003#Jul  1 12:41:57 DC01-R003 Bgp: %BGP-3-NOTIFICATION: sent to neighbor 10.1.3.17 (VRF default AS 4200000007) 4/0 (Hold Timer Expired Error/None) 0 bytes
+          show ip bgp sum
+Jul  1 12:42:16 DC01-R003 Bgp: %BGP-3-NOTIFICATION: sent to neighbor 10.1.3.9 (VRF default AS 4200000007) 4/0 (Hold Timer Expired Error/None) 0 bytes
+BGP summary information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Neighbor Status Codes: m - Under maintenance
+  Neighbor  V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
+  10.1.3.9  4 4200000007        33        54    0    0 00:00:01 Active
+  10.1.3.10 4 4200000008        31        54    0    0 00:21:35 Estab   2      2
+  10.1.3.17 4 4200000007        32        49    0    0 00:00:21 Connect
+  10.1.3.18 4 4200000008        38        48    0    0 00:21:35 Estab   6      6
+DC01-R003#show ip bgp
+BGP routing table information for VRF default
+Router identifier 10.1.3.22, local AS number 65001
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending best path selection
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      0.0.0.0/0              10.1.3.18             0       -          100     0       4200000008 64512 4200000002 65000 i
+ * >      8.8.8.8/32             10.1.3.18             0       -          100     0       4200000008 64512 4200000002 65000 i
+ * >      10.0.10.0/24           10.1.3.18             0       -          100     0       4200000008 i
+ * >      10.0.10.10/32          10.1.3.18             0       -          100     0       4200000008 64512 4200000001 i
+ * >      10.0.12.0/24           -                     -       -          -       0       i
+ * >      10.0.20.0/24           10.1.3.18             0       -          100     0       4200000008 i
+ * >      10.0.20.136/32         10.1.3.18             0       -          100     0       4200000008 64512 4200000003 i
+ * >      10.1.3.0/30            10.1.3.10             0       -          100     0       4200000008 64512 4200000002 i
+ * >      10.1.3.8/29            -                     -       -          -       0       i
+ *        10.1.3.8/29            10.1.3.10             0       -          100     0       4200000008 i
+ * >      10.1.3.16/29           -                     -       -          -       0       i
+ *        10.1.3.16/29           10.1.3.18             0       -          100     0       4200000008 i
+DC01-R003#
+
+```
+
+</details>
+
+
+
+
+<details>
+<summary><b>Диагностика на DC01-LSW008:</b></summary>
+
+```
+DC01-LSW008#show ip route vrf PROD
+
+VRF: PROD
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+
+ B E      8.8.8.8/32 [200/0]
+           via VTEP 10.255.254.102 VNI 14096 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ B E      10.0.10.10/32 [200/0]
+           via VTEP 10.255.254.101 VNI 14096 router-mac 50:88:7f:51:e6:16 local-interface Vxlan1
+ C        10.0.10.0/24
+           directly connected, Vlan10
+ B E      10.0.12.0/24 [200/0]
+           via 10.1.3.22, Vlan1012
+ B E      10.0.20.136/32 [200/0]
+           via VTEP 10.255.254.103 VNI 14096 router-mac 50:27:d2:e6:4a:b8 local-interface Vxlan1
+ C        10.0.20.0/24
+           directly connected, Vlan20
+ B E      10.1.3.0/30 [200/0]
+           via 10.1.3.22, Vlan1012
+ B E      10.1.3.8/29 [200/0]
+           via 10.1.3.22, Vlan1012
+ C        10.1.3.16/29
+           directly connected, Vlan1012
+
+DC01-LSW008#show ip route vrf TEST
+
+VRF: TEST
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort:
+ B E      0.0.0.0/0 [200/0]
+           via 10.1.3.14, Vlan1011
+
+ B E      8.8.8.8/32 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.10.10/32 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.10.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.12.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.20.136/32 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.0.20.0/24 [200/0]
+           via 10.1.3.14, Vlan1011
+ B E      10.1.3.0/30 [200/0]
+           via VTEP 10.255.254.102 VNI 14095 router-mac 50:1e:8d:02:2c:78 local-interface Vxlan1
+ C        10.1.3.8/29
+           directly connected, Vlan1011
+ B E      10.1.3.16/29 [200/0]
+           via 10.1.3.14, Vlan1011
+
+DC01-LSW008#
+
+```
+
+</details>
+

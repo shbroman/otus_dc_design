@@ -1,0 +1,91 @@
+! Command: show running-config
+! device: DC01-R003 (vEOS-lab, EOS-4.33.1.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+no service interface inactive port-id allocation disabled
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname DC01-R003
+!
+spanning-tree mode mstp
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+vlan 12,1011-1012
+!
+interface Port-Channel1
+   switchport trunk allowed vlan 12,1011-1012
+   switchport mode trunk
+   spanning-tree bpdufilter enable
+!
+interface Ethernet1
+   channel-group 1 mode active
+!
+interface Ethernet2
+   channel-group 1 mode active
+!
+interface Ethernet3
+!
+interface Management1
+!
+interface Vlan12
+   ip address 10.0.12.1/24
+!
+interface Vlan1011
+   ip address 10.1.3.14/29
+!
+interface Vlan1012
+   ip address 10.1.3.22/29
+!
+ip routing
+!
+ip as-path access-list MORKOVKA permit ^4200000007_ any
+ip as-path access-list MORKOVKA permit ^4200000008_ any
+!
+route-map AS_OVERRIDE_OUT permit 20
+   match as-path MORKOVKA
+   set as-path prepend auto
+   set as-path match all replacement 65001
+!
+route-map AS_OVERRIDE_OUT permit 30
+!
+router bgp 65001
+   graceful-restart restart-time 300
+   neighbor 10.1.3.9 remote-as 4200000007
+   neighbor 10.1.3.9 as-path remote-as replace out
+   neighbor 10.1.3.9 default-originate
+   neighbor 10.1.3.10 remote-as 4200000008
+   neighbor 10.1.3.10 as-path remote-as replace out
+   neighbor 10.1.3.10 default-originate
+   neighbor 10.1.3.17 remote-as 4200000007
+   neighbor 10.1.3.17 as-path remote-as replace out
+   neighbor 10.1.3.18 remote-as 4200000008
+   neighbor 10.1.3.18 as-path remote-as replace out
+   !
+   address-family ipv4
+      neighbor 10.1.3.9 graceful-restart
+      neighbor 10.1.3.9 next-hop-self
+      neighbor 10.1.3.10 graceful-restart
+      neighbor 10.1.3.10 next-hop-self
+      neighbor 10.1.3.17 graceful-restart
+      neighbor 10.1.3.17 next-hop-self
+      neighbor 10.1.3.18 graceful-restart
+      neighbor 10.1.3.18 next-hop-self
+      redistribute connected
+!
+router multicast
+   ipv4
+      software-forwarding kernel
+   !
+   ipv6
+      software-forwarding kernel
+!
+end
