@@ -1,0 +1,137 @@
+! Command: show running-config
+! device: DC01-SSW001 (vEOS-lab, EOS-4.33.1.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+cdp
+   receive
+!
+no service interface inactive port-id allocation disabled
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+logging format timestamp traditional timezone
+!
+hostname DC01-SSW001
+!
+spanning-tree mode mstp
+!
+spanning-tree mst configuration
+   name DC01
+   revision 1
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+clock timezone Etc/GMT-3
+!
+interface Ethernet1
+   description # DC01-LSW001 #
+   no switchport
+   ip address 10.0.16.0/31
+   arp aging timeout 300
+!
+interface Ethernet2
+   description # DC01-LSW002 #
+   no switchport
+   ip address 10.0.16.2/31
+   arp aging timeout 300
+!
+interface Ethernet3
+   description # DC01-LSW003 #
+   no switchport
+   ip address 10.0.16.4/31
+   arp aging timeout 300
+!
+interface Ethernet4
+   description # DC01-LSW004 #
+   no switchport
+   ip address 10.0.16.6/31
+   arp aging timeout 300
+!
+interface Ethernet5
+   description # DC01-LSW005 #
+   no switchport
+   ip address 10.0.16.8/31
+   arp aging timeout 300
+!
+interface Ethernet6
+   description # DC01-LSW006 #
+   no switchport
+   ip address 10.0.16.10/31
+   arp aging timeout 300
+!
+interface Ethernet7
+!
+interface Ethernet8
+   description # DC02-SSW001 #
+   no switchport
+   ip address 10.0.5.0/31
+   arp aging timeout 300
+!
+interface Loopback0
+   ip address 10.0.7.1/32
+!
+interface Loopback101
+   description # Anycast Multi-Site VTEP IP ( Spines DC1) #
+   ip address 10.0.5.100/32
+!
+interface Management1
+!
+ip routing
+!
+ip prefix-list prf_dci_interconnect
+   seq 10 permit 10.0.5.0/24 le 31
+!
+ip prefix-list prf_loopback_leafs
+   seq 10 permit 10.0.8.0/22 le 32
+   seq 20 permit 10.0.12.0/22 le 32
+!
+ip prefix-list prf_loopback_spines
+   seq 10 permit 10.0.7.0/24 le 32
+!
+route-map dci_interconnect permit 10
+   match ip address prefix-list prf_dci_interconnect
+!
+route-map from_connected_to_bgp permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map from_connected_to_bgp permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+peer-filter pf_leafs
+   10 match as-range 4200010001-4200019999 result accept
+!
+router bgp 4200010000
+   router-id 10.0.7.1
+   timers bgp 10 30
+   maximum-paths 4 ecmp 4
+   bgp listen range 10.0.16.0/21 peer-group dyn_leafs peer-filter pf_leafs
+   neighbor dyn_leafs peer group
+   neighbor dyn_leafs send-community extended
+   neighbor 10.0.5.1 remote-as 4200020000
+   neighbor 10.0.5.1 send-community extended
+   !
+   vlan 10
+      rd evpn domain all 10.0.7.1:10
+      route-target import export evpn domain all 64512:10
+   !
+   address-family evpn
+      neighbor dyn_leafs activate
+      neighbor 10.0.5.1 activate
+      neighbor 10.0.5.1 domain remote
+      domain identifier 4200010000:1
+      domain identifier 4200020000:1 remote
+      neighbor default next-hop-self received-evpn-routes route-type ip-prefix inter-domain
+   !
+   address-family ipv4
+      neighbor dyn_leafs activate
+      neighbor 10.0.5.1 activate
+      neighbor 10.0.5.1 route-map dci_interconnect out
+      redistribute connected route-map from_connected_to_bgp
+!

@@ -1,0 +1,511 @@
+!Command: show running-config
+!Running configuration last done at: Sun Jul  5 22:07:52 2026
+!Time: Mon Jul  6 21:28:14 2026
+
+version 10.5(2) Bios:version
+hostname DC02-LSW003
+vdc DC02-LSW003 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+cfs eth distribute
+nv overlay evpn
+feature bgp
+feature interface-vlan
+feature vn-segment-vlan-based
+feature lldp
+clock timezone MSK 3 0
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6  role network-admin
+ip domain-lookup
+spanning-tree mode mst
+copp profile strict
+hardware access-list tcam region racl 512
+hardware access-list tcam region arp-ether 256
+snmp-server user admin network-admin auth md5 366B11C26F6DA669CA8B11FB1CEB0306AED7 priv aes-128 177D11F2771ABE6B96D770AC14AE0B52D3AA localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+fabric forwarding anycast-gateway-mac 0200.0000.0001
+vlan 1,10-12,20-22,30-32,50,997-999
+vlan 10
+  vn-segment 10010
+vlan 11
+  vn-segment 10011
+vlan 12
+  vn-segment 10012
+vlan 20
+  vn-segment 10020
+vlan 21
+  vn-segment 10021
+vlan 22
+  vn-segment 10022
+vlan 30
+  vn-segment 10030
+vlan 31
+  vn-segment 10031
+vlan 32
+  vn-segment 10032
+vlan 997
+  name POTATO
+  vn-segment 20997
+vlan 998
+  name TOMATO
+  vn-segment 20998
+vlan 999
+  name CARROT
+  vn-segment 20999
+
+spanning-tree mst configuration
+  name DC02
+  revision 1
+ip prefix-list from_connected_vrf_all seq 5 permit 10.1.0.0/16 le 32
+ip prefix-list from_connected_vrf_all seq 10 permit 10.2.0.0/16 le 32
+ip prefix-list from_connected_vrf_all seq 15 permit 10.3.0.0/16 le 32
+ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
+ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
+route-map from_connected_to_bgp permit 10
+  match ip address prefix-list prf_loopback_leafs
+route-map from_connected_to_bgp permit 20
+  match ip address prefix-list prf_loopback_spines
+route-map from_connected_vrf_all permit 10
+  match ip address prefix-list from_connected_vrf_all
+vrf context CARROT
+  rd 4200020003:999
+  address-family ipv4 unicast
+    route-target import 64512:999
+    route-target import 64512:999 evpn
+    route-target export 64512:999
+    route-target export 64512:999 evpn
+vrf context POTATO
+  vni 20997
+  rd 4200020003:997
+  address-family ipv4 unicast
+    route-target import 64512:997
+    route-target import 64512:997 evpn
+    route-target export 64512:997
+    route-target export 64512:997 evpn
+vrf context TOMATO
+  rd 4200020003:998
+  address-family ipv4 unicast
+    route-target import 64512:998
+    route-target import 64512:998 evpn
+    route-target export 64512:998
+    route-target export 64512:998 evpn
+vrf context management
+
+
+interface Vlan1
+  no ip redirects
+  no ipv6 redirects
+
+interface Vlan10
+  vrf member POTATO
+  no ip redirects
+  ip address 10.1.10.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan11
+  no shutdown
+  vrf member POTATO
+  no ip redirects
+  ip address 10.1.11.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan12
+  no shutdown
+  vrf member POTATO
+  no ip redirects
+  ip address 10.1.12.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan20
+  no shutdown
+  vrf member TOMATO
+  no ip redirects
+  ip address 10.2.20.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan21
+  no shutdown
+  vrf member TOMATO
+  no ip redirects
+  ip address 10.2.21.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan22
+  no shutdown
+  vrf member TOMATO
+  no ip redirects
+  ip address 10.2.22.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan30
+  no shutdown
+  vrf member CARROT
+  no ip redirects
+  ip address 10.3.30.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan31
+  no shutdown
+  vrf member CARROT
+  no ip redirects
+  ip address 10.3.31.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan32
+  no shutdown
+  vrf member CARROT
+  no ip redirects
+  ip address 10.3.32.1/24
+  no ipv6 redirects
+  fabric forwarding mode anycast-gateway
+
+interface Vlan997
+  no shutdown
+  vrf member POTATO
+  no ip redirects
+  ip forward
+  no ipv6 redirects
+
+interface Vlan998
+  no shutdown
+  vrf member TOMATO
+  no ip redirects
+  ip forward
+  no ipv6 redirects
+
+interface Vlan999
+  no shutdown
+  vrf member CARROT
+  no ip redirects
+  ip forward
+  no ipv6 redirects
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback10
+  member vni 10010
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10011
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10012
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10020
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10021
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10022
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10030
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10031
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10032
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 20997 associate-vrf
+  member vni 20998 associate-vrf
+  member vni 20999 associate-vrf
+
+interface Ethernet1/1
+  description # DC02-SSW001 #
+  no switchport
+  no ip redirects
+  ip address 10.0.208.5/31
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/2
+  description # DC02-SSW002 #
+  no switchport
+  no ip redirects
+  ip address 10.0.224.5/31
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/3
+  no switchport
+  no shutdown
+
+interface Ethernet1/3.10
+  encapsulation dot1q 10
+  vrf member POTATO
+  no ip redirects
+  ip address 10.0.240.12/31
+  no ipv6 redirects
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/3.20
+  encapsulation dot1q 20
+  vrf member TOMATO
+  no ip redirects
+  ip address 10.0.240.14/31
+  no ipv6 redirects
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/3.30
+  encapsulation dot1q 30
+  vrf member CARROT
+  no ip redirects
+  ip address 10.0.240.16/31
+  no ipv6 redirects
+  ip arp timeout 300
+  no shutdown
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+  switchport access vlan 12
+  spanning-tree port type edge
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  ip address 10.0.248.3/32
+
+interface loopback10
+  ip address 10.0.252.3/32
+icam monitor scale
+
+line console
+line vty
+boot nxos bootflash:/nxos64-cs.10.5.2.F.bin
+router bgp 4200020003
+  router-id 10.0.248.3
+  timers bgp 10 30
+  bestpath as-path multipath-relax
+  reconnect-interval 10
+  address-family ipv4 unicast
+    redistribute direct route-map from_connected_to_bgp
+  address-family l2vpn evpn
+  template peer spines
+    remote-as 4200020000
+    ebgp-multihop 5
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+      send-community extended
+  neighbor 10.0.208.4
+    inherit peer spines
+  neighbor 10.0.224.4
+    inherit peer spines
+  vrf CARROT
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map from_connected_vrf_all
+    neighbor 10.0.240.17
+      remote-as 65500
+      address-family ipv4 unicast
+  vrf POTATO
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map from_connected_vrf_all
+    neighbor 10.0.240.13
+      remote-as 65500
+      address-family ipv4 unicast
+  vrf TOMATO
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map from_connected_vrf_all
+    neighbor 10.0.240.15
+      remote-as 65500
+      address-family ipv4 unicast
+evpn
+  vni 10010 l2
+    rd 4200020003:10
+    route-target import 64512:10
+    route-target export 64512:10
+  vni 10011 l2
+    rd 4200020003:11
+    route-target import 64512:11
+    route-target export 64512:11
+  vni 10012 l2
+    rd 4200020003:12
+    route-target import 64512:12
+    route-target export 64512:12
+  vni 10020 l2
+    rd 4200020003:20
+    route-target import 64512:20
+    route-target export 64512:20
+  vni 10021 l2
+    rd 4200020003:21
+    route-target import 64512:21
+    route-target export 64512:21
+  vni 10022 l2
+    rd 4200020003:22
+    route-target import 64512:22
+    route-target export 64512:22
+  vni 10030 l2
+    rd 4200020003:30
+    route-target import 64512:30
+    route-target export 64512:30
+  vni 10031 l2
+    rd 4200020003:31
+    route-target import 64512:31
+    route-target export 64512:31
+  vni 10032 l2
+    rd 4200020003:32
+    route-target import 64512:32
+    route-target export 64512:32
+  vni 20997 l2
+    rd 4200020003:997
+    route-target import 64512:997
+    route-target export 64512:997
+  vni 20998 l2
+    rd 4200020003:998
+    route-target import 64512:998
+    route-target export 64512:998
+  vni 20999 l2
+    rd 4200020003:999
+    route-target import 64512:999
+    route-target export 64512:999
+
+

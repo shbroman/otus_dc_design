@@ -1,0 +1,247 @@
+! Command: show running-config
+! device: DC01-LSW001 (vEOS-lab, EOS-4.33.1.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+cdp
+   receive
+!
+no service interface inactive port-id allocation disabled
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+logging format timestamp traditional timezone
+!
+hostname DC01-LSW001
+!
+spanning-tree mode mstp
+!
+spanning-tree mst configuration
+   name DC01
+   revision 1
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+clock timezone Etc/GMT-3
+!
+vlan 10-12,20-22,30-32
+!
+vrf instance CARROT
+   rd 4200020001:999
+!
+vrf instance POTATO
+   rd 4200020001:997
+!
+vrf instance TOMATO
+   rd 4200020001:998
+!
+interface Ethernet1
+   description # DC01-SSW001 #
+   no switchport
+   ip address 10.0.16.1/31
+   arp aging timeout 300
+!
+interface Ethernet2
+   description # DC01-SSW002 #
+   no switchport
+   ip address 10.0.24.1/31
+   arp aging timeout 300
+!
+interface Ethernet3
+!
+interface Ethernet4
+   switchport access vlan 12
+   spanning-tree portfast
+!
+interface Ethernet5
+   switchport access vlan 20
+   spanning-tree portfast
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.8.1/32
+   isis enable dc01
+!
+interface Loopback10
+   ip address 10.0.12.1/32
+!
+interface Management1
+!
+interface Vlan10
+   vrf POTATO
+   ip address virtual 10.1.10.1/24
+!
+interface Vlan11
+   vrf POTATO
+   ip address virtual 10.1.11.1/24
+!
+interface Vlan12
+   vrf POTATO
+   ip address virtual 10.1.12.1/24
+!
+interface Vlan20
+   vrf TOMATO
+   ip address virtual 10.2.20.1/24
+!
+interface Vlan21
+   vrf TOMATO
+   ip address virtual 10.2.21.1/24
+!
+interface Vlan22
+   vrf TOMATO
+   ip address virtual 10.2.22.1/24
+!
+interface Vlan30
+   vrf CARROT
+   ip address virtual 10.3.30.1/24
+!
+interface Vlan31
+   vrf CARROT
+   ip address virtual 10.3.31.1/24
+!
+interface Vlan32
+   vrf CARROT
+   ip address virtual 10.3.32.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback10
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 10010
+   vxlan vlan 11 vni 10011
+   vxlan vlan 12 vni 10012
+   vxlan vlan 20 vni 10020
+   vxlan vlan 21 vni 10021
+   vxlan vlan 22 vni 10022
+   vxlan vlan 30 vni 10030
+   vxlan vlan 31 vni 10031
+   vxlan vlan 32 vni 10032
+   vxlan vrf CARROT vni 20999
+   vxlan vrf POTATO vni 20997
+   vxlan vrf TOMATO vni 20998
+!
+ip virtual-router mac-address 02:00:00:00:00:01
+!
+ip routing
+ip routing vrf CARROT
+ip routing vrf POTATO
+ip routing vrf TOMATO
+!
+ip prefix-list prf_loopback_leafs seq 10 permit 10.0.8.0/22 le 32
+ip prefix-list prf_loopback_leafs seq 20 permit 10.0.12.0/22 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.0.7.0/24 le 32
+!
+route-map from_connected_to_bgp permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map from_connected_to_bgp permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+router bgp 4200010001
+   router-id 10.0.8.1
+   timers bgp 10 30
+   maximum-paths 4 ecmp 4
+   neighbor spines peer group
+   neighbor spines remote-as 4200010000
+   neighbor spines bfd
+   neighbor spines send-community extended
+   neighbor 10.0.16.0 peer group spines
+   neighbor 10.0.24.0 peer group spines
+   !
+   vlan 10
+      rd 4200010001:10010
+      route-target import 64512:10
+      route-target export 64512:10
+      redistribute learned
+   !
+   vlan 11
+      rd 4200010001:10011
+      route-target import 64512:11
+      route-target export 64512:11
+      redistribute learned
+   !
+   vlan 12
+      rd 4200010001:10012
+      route-target import 64512:12
+      route-target export 64512:12
+      redistribute learned
+   !
+   vlan 20
+      rd 4200010001:10020
+      route-target import 64512:20
+      route-target export 64512:20
+      redistribute learned
+   !
+   vlan 21
+      rd 4200010001:10021
+      route-target import 64512:21
+      route-target export 64512:21
+      redistribute learned
+   !
+   vlan 22
+      rd 4200010001:10022
+      route-target import 64512:22
+      route-target export 64512:22
+      redistribute learned
+   !
+   vlan 30
+      rd 4200010001:10030
+      route-target import 64512:30
+      route-target export 64512:30
+      redistribute learned
+   !
+   vlan 31
+      rd 4200010001:10031
+      route-target import 64512:31
+      route-target export 64512:31
+      redistribute learned
+   !
+   vlan 32
+      rd 4200010001:10032
+      route-target import 64512:32
+      route-target export 64512:32
+      redistribute learned
+   !
+   address-family evpn
+      neighbor spines activate
+   !
+   address-family ipv4
+      neighbor spines activate
+      redistribute connected route-map from_connected_to_bgp
+   !
+   vrf CARROT
+      rd 4200010001:999
+      route-target import evpn 64512:997
+      route-target export evpn 64512:997
+      redistribute connected
+   !
+   vrf POTATO
+      rd 4200010001:997
+      route-target import evpn 64512:997
+      route-target export evpn 64512:997
+      redistribute connected
+   !
+   vrf TOMATO
+      rd 4200010001:998
+      route-target import evpn 64512:997
+      route-target export evpn 64512:997
+      redistribute connected
+!
+router multicast
+   ipv4
+      software-forwarding kernel
+   !
+   ipv6
+      software-forwarding kernel
+!
+end
