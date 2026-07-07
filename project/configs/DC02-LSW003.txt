@@ -1,6 +1,8 @@
+
+
 !Command: show running-config
-!Running configuration last done at: Sun Jul  5 22:07:52 2026
-!Time: Mon Jul  6 21:28:14 2026
+!Running configuration last done at: Tue Jul  7 21:53:27 2026
+!Time: Tue Jul  7 21:56:00 2026
 
 version 10.5(2) Bios:version
 hostname DC02-LSW003
@@ -21,13 +23,15 @@ clock timezone MSK 3 0
 feature nv overlay
 
 no password strength-check
-username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6  role network-admin
+username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6
+ role network-admin
 ip domain-lookup
 spanning-tree mode mst
 copp profile strict
 hardware access-list tcam region racl 512
 hardware access-list tcam region arp-ether 256
-snmp-server user admin network-admin auth md5 366B11C26F6DA669CA8B11FB1CEB0306AED7 priv aes-128 177D11F2771ABE6B96D770AC14AE0B52D3AA localizedV2key
+snmp-server user admin network-admin auth md5 366B11C26F6DA669CA8B11FB1CEB0306AE
+D7 priv aes-128 177D11F2771ABE6B96D770AC14AE0B52D3AA localizedV2key
 rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
 rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
 rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
@@ -181,6 +185,7 @@ interface Vlan32
 
 interface Vlan997
   no shutdown
+  no autostate
   vrf member POTATO
   no ip redirects
   ip forward
@@ -253,7 +258,6 @@ interface Ethernet1/2
 
 interface Ethernet1/3
   no switchport
-  no shutdown
 
 interface Ethernet1/3.10
   encapsulation dot1q 10
@@ -507,5 +511,6 @@ evpn
     rd 4200020003:999
     route-target import 64512:999
     route-target export 64512:999
+
 
 

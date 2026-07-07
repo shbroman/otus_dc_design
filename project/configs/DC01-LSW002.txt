@@ -59,7 +59,7 @@ interface Ethernet3
 interface Ethernet4
 !
 interface Ethernet5
-   switchport access vlan 22
+   switchport access vlan 10
    spanning-tree portfast
 !
 interface Ethernet6
@@ -79,14 +79,17 @@ interface Management1
 !
 interface Vlan10
    vrf POTATO
-   ip address virtual 10.0.10.1/24
+   ip address virtual 10.1.10.1/24
 !
 interface Vlan11
+   shutdown
    vrf POTATO
-   ip address virtual 10.0.11.1/24
+   ip address virtual 10.1.11.1/24
 !
 interface Vlan12
+   shutdown
    vrf POTATO
+   ip address virtual 10.1.12.1/24
 !
 interface Vlan20
    vrf TOMATO
@@ -218,8 +221,9 @@ router bgp 4200010002
       redistribute connected route-map from_connected_to_bgp
    !
    vrf CARROT
-      route-target import evpn 64512:997
-      route-target export evpn 64512:997
+      rd 4200010002:999
+      route-target import evpn 64512:999
+      route-target export evpn 64512:999
       redistribute connected
    !
    vrf POTATO
@@ -229,8 +233,9 @@ router bgp 4200010002
       redistribute connected
    !
    vrf TOMATO
-      route-target import evpn 64512:997
-      route-target export evpn 64512:997
+      rd 4200010002:998
+      route-target import evpn 64512:998
+      route-target export evpn 64512:998
       redistribute connected
 !
 router multicast

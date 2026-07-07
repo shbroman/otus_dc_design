@@ -1,3 +1,4 @@
+
 ! Command: show running-config
 ! device: DC01-LSW001 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -64,6 +65,8 @@ interface Ethernet5
    spanning-tree portfast
 !
 interface Ethernet6
+   switchport access vlan 12
+   spanning-tree portfast
 !
 interface Ethernet7
 !
@@ -75,6 +78,10 @@ interface Loopback0
 !
 interface Loopback10
    ip address 10.0.12.1/32
+!
+interface Loopback110
+   vrf POTATO
+   ip address 10.3.0.3/32
 !
 interface Management1
 !
@@ -221,8 +228,8 @@ router bgp 4200010001
    !
    vrf CARROT
       rd 4200010001:999
-      route-target import evpn 64512:997
-      route-target export evpn 64512:997
+      route-target import evpn 64512:999
+      route-target export evpn 64512:999
       redistribute connected
    !
    vrf POTATO
@@ -233,8 +240,8 @@ router bgp 4200010001
    !
    vrf TOMATO
       rd 4200010001:998
-      route-target import evpn 64512:997
-      route-target export evpn 64512:997
+      route-target import evpn 64512:998
+      route-target export evpn 64512:998
       redistribute connected
 !
 router multicast

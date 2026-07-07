@@ -1,3 +1,4 @@
+
 ! Command: show running-config
 ! device: DC02-BGW001 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -78,7 +79,13 @@ interface Loopback10
 interface Loopback101
    ip address 10.0.245.2/32
 !
+interface Loopback110
+   vrf POTATO
+   ip address 10.1.0.100/32
+!
 interface Management1
+!
+interface Vlan110
 !
 interface Vxlan1
    vxlan source-interface Loopback101

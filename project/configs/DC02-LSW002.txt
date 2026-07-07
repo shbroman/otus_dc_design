@@ -1,28 +1,8 @@
-!Command: show running-config interface Vlan12
-!Running configuration last done at: Mon Jul  6 21:19:38 2026
-!Time: Mon Jul  6 21:28:00 2026
 
-version 10.5(2) Bios:version
-
-interface Vlan12
-  vrf member POTATO
-  no ip redirects
-  ip address 10.1.12.1/24
-  no ipv6 redirects
-  fabric forwarding mode anycast-gateway
-
-DC02-LSW002# wr mem
-                ^
-% Invalid command at '^' marker.
-DC02-LSW002# copy r s
-[########################################] 100%
-Copy complete, now saving to disk (please wait)...
-Copy complete.
-DC02-LSW002# sh run | no-more
 
 !Command: show running-config
-!Running configuration last done at: Mon Jul  6 21:19:38 2026
-!Time: Mon Jul  6 21:28:49 2026
+!Running configuration last done at: Tue Jul  7 21:54:24 2026
+!Time: Tue Jul  7 21:55:52 2026
 
 version 10.5(2) Bios:version
 hostname DC02-LSW002
@@ -204,6 +184,7 @@ interface Vlan32
 
 interface Vlan997
   no shutdown
+  no autostate
   vrf member POTATO
   no ip redirects
   ip forward
@@ -276,7 +257,6 @@ interface Ethernet1/2
 
 interface Ethernet1/3
   no switchport
-  no shutdown
 
 interface Ethernet1/3.10
   encapsulation dot1q 10
@@ -531,4 +511,5 @@ evpn
     rd 4200020002:999
     route-target import 64512:999
     route-target export 64512:999
+
 
