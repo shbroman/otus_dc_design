@@ -1,3 +1,4 @@
+
 ! Command: show running-config
 ! device: DC01-LSW002 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -34,13 +35,13 @@ clock timezone Etc/GMT-3
 vlan 10-12,20-22,30-32
 !
 vrf instance CARROT
-   rd 4200020002:999
+   rd 4200010002:999
 !
 vrf instance POTATO
-   rd 4200020002:997
+   rd 4200010002:997
 !
 vrf instance TOMATO
-   rd 4200020002:998
+   rd 4200010002:998
 !
 interface Ethernet1
    description # DC01-SSW001 #
