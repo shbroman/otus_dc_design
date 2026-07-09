@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC02-BGW001 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -117,9 +116,7 @@ ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
 ip community-list 65500:1000 permit 65500:1000
 !
-route-map AS4200020000_in permit 10
-   match community 65500:1000
-   set metric 1000
+route-map AS4200020000_in permit 1000
 !
 route-map dci permit 10
    match ip address prefix-list prf_loopback_dci

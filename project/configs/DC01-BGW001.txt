@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC01-BGW001 (vEOS-lab, EOS-4.33.1.1F)
 !
