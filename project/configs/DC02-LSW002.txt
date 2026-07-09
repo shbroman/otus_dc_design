@@ -1,8 +1,7 @@
 
-
 !Command: show running-config
-!Running configuration last done at: Tue Jul  7 21:54:24 2026
-!Time: Tue Jul  7 21:55:52 2026
+!Running configuration last done at: Wed Jul  8 20:21:47 2026
+!Time: Thu Jul  9 09:42:27 2026
 
 version 10.5(2) Bios:version
 hostname DC02-LSW002
@@ -76,6 +75,18 @@ ip prefix-list from_connected_vrf_all seq 15 permit 10.3.0.0/16 le 32
 ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
 ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
+ip community-list standard 65501:10000 seq 5 permit 65501:10000
+ip community-list standard 65501:6000 seq 5 permit 65501:6000
+ip community-list standard 65501:8000 seq 5 permit 65501:8000
+route-map AS4200020000_in permit 40
+  match community 65501:10000
+  set local-preference 10000
+route-map AS4200020000_in permit 50
+  match community 65501:8000
+  set local-preference 8000
+route-map AS4200020000_in permit 60
+  match community 65501:6000
+  set local-preference 6000
 route-map from_connected_to_bgp permit 10
   match ip address prefix-list prf_loopback_leafs
 route-map from_connected_to_bgp permit 20
@@ -83,6 +94,7 @@ route-map from_connected_to_bgp permit 20
 route-map from_connected_vrf_all permit 10
   match ip address prefix-list from_connected_vrf_all
 vrf context CARROT
+  vni 20999
   rd 4200020002:999
   address-family ipv4 unicast
     route-target import 64512:999
@@ -98,6 +110,7 @@ vrf context POTATO
     route-target export 64512:997
     route-target export 64512:997 evpn
 vrf context TOMATO
+  vni 20998
   rd 4200020002:998
   address-family ipv4 unicast
     route-target import 64512:998
@@ -128,6 +141,7 @@ interface Vlan11
   fabric forwarding mode anycast-gateway
 
 interface Vlan12
+  no shutdown
   vrf member POTATO
   no ip redirects
   ip address 10.1.12.1/24
@@ -257,6 +271,7 @@ interface Ethernet1/2
 
 interface Ethernet1/3
   no switchport
+  no shutdown
 
 interface Ethernet1/3.10
   encapsulation dot1q 10
@@ -435,12 +450,14 @@ router bgp 4200020002
     ebgp-multihop 5
     address-family ipv4 unicast
     address-family l2vpn evpn
+      send-community
       send-community extended
+      route-map AS4200020000_in in
   neighbor 10.0.208.2
     inherit peer spines
   neighbor 10.0.224.2
     inherit peer spines
-    shutdown
+    no shutdown
   vrf CARROT
     address-family ipv4 unicast
       advertise l2vpn evpn
@@ -452,6 +469,7 @@ router bgp 4200020002
     address-family ipv4 unicast
       advertise l2vpn evpn
       redistribute direct route-map from_connected_vrf_all
+      aggregate-address 10.1.0.0/16
     neighbor 10.0.240.7
       remote-as 65500
       address-family ipv4 unicast
@@ -511,5 +529,6 @@ evpn
     rd 4200020002:999
     route-target import 64512:999
     route-target export 64512:999
+
 
 

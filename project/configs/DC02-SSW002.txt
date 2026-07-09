@@ -1,3 +1,4 @@
+
 ! Command: show running-config
 ! device: DC02-SSW002 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -96,7 +97,7 @@ router bgp 4200020000
    maximum-paths 4 ecmp 4
    bgp listen range 10.0.224.0/22 peer-group dyn_leafs peer-filter pf_leafs
    neighbor dyn_leafs peer group
-   neighbor dyn_leafs send-community extended
+   neighbor dyn_leafs send-community standard extended
    !
    address-family evpn
       neighbor dyn_leafs activate

@@ -1,0 +1,170 @@
+
+!
+! Last configuration change at 13:55:50 UTC Wed Jul 8 2026
+!
+version 15.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname DC02-R001
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ description # ROSTELECOM #
+ ip address 192.0.2.2 255.255.255.252
+ no ip redirects
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ description # DC02-FW002 #
+ ip address 203.0.113.2 255.255.255.254 secondary
+ ip address 203.0.113.0 255.255.255.254
+ no ip redirects
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router bgp 20000
+ bgp log-neighbor-changes
+ bgp graceful-restart
+ neighbor AS65500 peer-group
+ neighbor AS65500 remote-as 65500
+ neighbor AS65500 timers 10 30
+ neighbor 192.0.2.1 remote-as 12389
+ neighbor 203.0.113.1 peer-group AS65500
+ neighbor 203.0.113.3 peer-group AS65500
+ !
+ address-family ipv4
+  aggregate-address 203.0.113.0 255.255.255.0
+  neighbor AS65500 route-map AS65500_out out
+  neighbor 192.0.2.1 activate
+  neighbor 192.0.2.1 route-map AS12389_out out
+  neighbor 203.0.113.1 activate
+  neighbor 203.0.113.3 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+ip prefix-list AS12389_out seq 5 permit 203.0.113.0/24
+!
+ip prefix-list default_only seq 5 permit 0.0.0.0/0
+ipv6 ioam timestamp
+!
+route-map AS12389_out permit 10
+ match ip address prefix-list AS12389_out
+!
+route-map AS65500_out permit 10
+ match ip address prefix-list default_only
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end
+

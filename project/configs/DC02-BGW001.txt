@@ -115,6 +115,11 @@ ip prefix-list prf_loopback_dci seq 10 permit 10.0.245.0/24 le 32
 ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
 ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
+ip community-list 65500:1000 permit 65500:1000
+!
+route-map AS4200020000_in permit 10
+   match community 65500:1000
+   set metric 1000
 !
 route-map dci permit 10
    match ip address prefix-list prf_loopback_dci
@@ -131,12 +136,14 @@ route-map from_connected_to_bgp permit 30
 router bgp 4200020004
    router-id 10.0.248.4
    timers bgp 10 30
+   bgp always-compare-med
    maximum-paths 4 ecmp 4
    bgp bestpath d-path
    neighbor spines peer group
    neighbor spines remote-as 4200020000
    neighbor spines bfd
-   neighbor spines send-community extended
+   neighbor spines route-map AS4200020000_in in
+   neighbor spines send-community standard extended
    neighbor 10.0.5.0 remote-as 4200010003
    neighbor 10.0.5.0 send-community extended
    neighbor 10.0.208.6 peer group spines

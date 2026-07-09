@@ -1,8 +1,7 @@
 
-
 !Command: show running-config
-!Running configuration last done at: Tue Jul  7 21:53:27 2026
-!Time: Tue Jul  7 21:56:00 2026
+!Running configuration last done at: Wed Jul  8 19:43:11 2026
+!Time: Thu Jul  9 09:37:23 2026
 
 version 10.5(2) Bios:version
 hostname DC02-LSW003
@@ -23,15 +22,13 @@ clock timezone MSK 3 0
 feature nv overlay
 
 no password strength-check
-username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6
- role network-admin
+username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6  role network-admin
 ip domain-lookup
 spanning-tree mode mst
 copp profile strict
 hardware access-list tcam region racl 512
 hardware access-list tcam region arp-ether 256
-snmp-server user admin network-admin auth md5 366B11C26F6DA669CA8B11FB1CEB0306AE
-D7 priv aes-128 177D11F2771ABE6B96D770AC14AE0B52D3AA localizedV2key
+snmp-server user admin network-admin auth md5 366B11C26F6DA669CA8B11FB1CEB0306AED7 priv aes-128 177D11F2771ABE6B96D770AC14AE0B52D3AA localizedV2key
 rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
 rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
 rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
@@ -77,6 +74,20 @@ ip prefix-list from_connected_vrf_all seq 15 permit 10.3.0.0/16 le 32
 ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
 ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
 ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
+ip community-list standard 65500:1000 seq 5 permit 65500:1000
+ip community-list standard 65501:10000 seq 5 permit 65501:10000
+ip community-list standard 65501:6000 seq 5 permit 65501:6000
+ip community-list standard 65501:8000 seq 5 permit 65501:8000
+route-map AS4200020000_in permit 40
+  match community 65501:10000
+  set local-preference 10000
+route-map AS4200020000_in permit 50
+  match community 65501:8000
+  set local-preference 8000
+route-map AS4200020000_in permit 60
+  match community 65501:6000
+  set local-preference 6000
+route-map AS4200020000_in permit 1000
 route-map from_connected_to_bgp permit 10
   match ip address prefix-list prf_loopback_leafs
 route-map from_connected_to_bgp permit 20
@@ -84,6 +95,7 @@ route-map from_connected_to_bgp permit 20
 route-map from_connected_vrf_all permit 10
   match ip address prefix-list from_connected_vrf_all
 vrf context CARROT
+  vni 20999
   rd 4200020003:999
   address-family ipv4 unicast
     route-target import 64512:999
@@ -99,6 +111,7 @@ vrf context POTATO
     route-target export 64512:997
     route-target export 64512:997 evpn
 vrf context TOMATO
+  vni 20998
   rd 4200020003:998
   address-family ipv4 unicast
     route-target import 64512:998
@@ -436,7 +449,9 @@ router bgp 4200020003
     ebgp-multihop 5
     address-family ipv4 unicast
     address-family l2vpn evpn
+      send-community
       send-community extended
+      route-map AS4200020000_in in
   neighbor 10.0.208.4
     inherit peer spines
   neighbor 10.0.224.4

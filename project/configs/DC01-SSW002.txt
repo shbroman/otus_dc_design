@@ -1,6 +1,6 @@
 
 ! Command: show running-config
-! device: DC02-SSW001 (vEOS-lab, EOS-4.33.1.1F)
+! device: DC01-SSW002 (vEOS-lab, EOS-4.33.1.1F)
 !
 ! boot system flash:/vEOS-lab.swi
 !
@@ -17,12 +17,12 @@ service routing protocols model multi-agent
 !
 logging format timestamp traditional timezone
 !
-hostname DC02-SSW001
+hostname DC01-SSW002
 !
 spanning-tree mode mstp
 !
 spanning-tree mst configuration
-   name DC02
+   name DC01
    revision 1
 !
 system l1
@@ -32,39 +32,39 @@ system l1
 clock timezone Etc/GMT-3
 !
 interface Ethernet1
-   description # DC02-LSW001 #
+   description # DC01-LSW001 #
    no switchport
-   ip address 10.0.208.0/31
+   ip address 10.0.24.0/31
    arp aging timeout 300
 !
 interface Ethernet2
-   description # DC02-LSW002 #
+   description # DC01-LSW002 #
    no switchport
-   ip address 10.0.208.2/31
+   ip address 10.0.24.2/31
    arp aging timeout 300
 !
 interface Ethernet3
-   description # DC02-LSW003 #
+   description # DC01-LSW003 #
    no switchport
-   ip address 10.0.208.4/31
+   ip address 10.0.24.4/31
    arp aging timeout 300
 !
 interface Ethernet4
-   description # DC02-LSW004 #
+   description # DC01-LSW004 #
    no switchport
-   ip address 10.0.208.6/31
+   ip address 10.0.24.6/31
    arp aging timeout 300
 !
 interface Ethernet5
-   description # DC02-LSW005 #
+   description # DC01-LSW005 #
    no switchport
-   ip address 10.0.208.8/31
+   ip address 10.0.24.8/31
    arp aging timeout 300
 !
 interface Ethernet6
-   description # DC02-LSW006 #
+   description # DC01-LSW006 #
    no switchport
-   ip address 10.0.208.10/31
+   ip address 10.0.24.10/31
    arp aging timeout 300
 !
 interface Ethernet7
@@ -72,15 +72,15 @@ interface Ethernet7
 interface Ethernet8
 !
 interface Loopback0
-   ip address 10.0.247.1/32
+   ip address 10.0.7.2/32
 !
 interface Management1
 !
 ip routing
 !
-ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
-ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
-ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
+ip prefix-list prf_loopback_leafs seq 10 permit 10.0.8.0/22 le 32
+ip prefix-list prf_loopback_leafs seq 20 permit 10.0.12.0/22 le 32
+ip prefix-list prf_loopback_spines seq 10 permit 10.0.7.0/24 le 32
 !
 route-map from_connected_to_bgp permit 10
    match ip address prefix-list prf_loopback_leafs
@@ -89,17 +89,15 @@ route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
 peer-filter pf_leafs
-   10 match as-range 4200020001-4200029999 result accept
+   10 match as-range 4200010001-4200019999 result accept
 !
-router bgp 4200020000
-   router-id 10.0.247.1
+router bgp 4200010000
+   router-id 10.0.11.2
    timers bgp 10 30
-   graceful-restart restart-time 300
-   graceful-restart
    maximum-paths 4 ecmp 4
-   bgp listen range 10.0.208.0/22 peer-group dyn_leafs peer-filter pf_leafs
+   bgp listen range 10.0.24.0/21 peer-group dyn_leafs peer-filter pf_leafs
    neighbor dyn_leafs peer group
-   neighbor dyn_leafs send-community standard extended
+   neighbor dyn_leafs send-community extended
    !
    address-family evpn
       neighbor dyn_leafs activate
