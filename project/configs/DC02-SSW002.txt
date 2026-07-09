@@ -1,5 +1,6 @@
 
 ! Command: show running-config
+Jul  9 13:26:40 +03 DC02-SSW002 Bgp: %BGP-3-NOTIFICATION: received from neighbor 10.0.224.11 (VRF default AS 4200020006) 2/2 (Open Message Error/bad AS number) 0 bytes (message repeated 1 times in 9.62819 secs)
 ! device: DC02-SSW002 (vEOS-lab, EOS-4.33.1.1F)
 !
 ! boot system flash:/vEOS-lab.swi

@@ -1,6 +1,7 @@
+
 !Command: show running-config
 !Running configuration last done at: Wed Jul  8 20:09:35 2026
-!Time: Thu Jul  9 09:32:50 2026
+!Time: Thu Jul  9 13:02:36 2026
 
 version 10.5(2) Bios:version
 hostname DC02-LSW001
@@ -21,13 +22,13 @@ clock timezone MSK 3 0
 feature nv overlay
 
 no password strength-check
-username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6                                                                                                      role network-admin
+username admin password 5 $5$HDCLOK$vVl/gQUkBwodmoKz/Dx6QdpqLLP88gHevxMW/wtqvs6  role network-admin
 ip domain-lookup
 spanning-tree mode mst
 copp profile strict
 hardware access-list tcam region racl 512
 hardware access-list tcam region arp-ether 256
-snmp-server user admin network-admin auth md5 174CF6D00BE5CEB0DDDFE97E1BC5DAEB72                                                                                                    CB priv aes-128 320C939147047407792D64E996584323EB5C localizedV2key
+snmp-server user admin network-admin auth md5 174CF6D00BE5CEB0DDDFE97E1BC5DAEB72CB priv aes-128 320C939147047407792D64E996584323EB5C localizedV2key
 rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
 rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
 rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
@@ -536,5 +537,4 @@ evpn
     route-target export 64512:999
 
 no logging console
-
 
