@@ -79,6 +79,7 @@ interface Loopback101
    ip address 10.0.245.2/32
 !
 interface Loopback110
+   shutdown
    vrf POTATO
    ip address 10.1.0.100/32
 !
@@ -110,13 +111,37 @@ ip routing vrf CARROT
 ip routing vrf POTATO
 ip routing vrf TOMATO
 !
-ip prefix-list prf_loopback_dci seq 10 permit 10.0.245.0/24 le 32
-ip prefix-list prf_loopback_leafs seq 10 permit 10.0.248.0/22 le 32
-ip prefix-list prf_loopback_leafs seq 20 permit 10.0.252.0/22 le 32
-ip prefix-list prf_loopback_spines seq 10 permit 10.0.247.0/24 le 32
 ip community-list 65500:1000 permit 65500:1000
 !
+ip prefix-list AS4200010003_out
+   seq 10 permit 10.0.245.0/24 le 32
+!
+ip prefix-list prf_loopback_dci
+   seq 10 permit 10.0.245.0/24 le 32
+!
+ip prefix-list prf_loopback_leafs
+   seq 10 permit 10.0.248.0/22 le 32
+   seq 20 permit 10.0.252.0/22 le 32
+!
+ip prefix-list prf_loopback_local_dci
+   seq 10 permit 10.0.245.2/32
+!
+ip prefix-list prf_loopback_spines
+   seq 10 permit 10.0.247.0/24 le 32
+!
+route-map AS4200010003_out permit 10
+   match ip address prefix-list AS4200010003_out
+!
 route-map AS4200020000_in permit 1000
+!
+route-map AS4200020000_out permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map AS4200020000_out permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+route-map AS4200020000_out permit 30
+   match ip address prefix-list prf_loopback_local_dci
 !
 route-map dci permit 10
    match ip address prefix-list prf_loopback_dci
@@ -139,10 +164,9 @@ router bgp 4200020004
    neighbor spines peer group
    neighbor spines remote-as 4200020000
    neighbor spines bfd
-   neighbor spines route-map AS4200020000_in in
    neighbor spines send-community standard extended
    neighbor 10.0.5.0 remote-as 4200010003
-   neighbor 10.0.5.0 send-community extended
+   neighbor 10.0.5.0 send-community standard extended
    neighbor 10.0.208.6 peer group spines
    neighbor 10.0.224.6 peer group spines
    !
@@ -201,7 +225,10 @@ router bgp 4200020004
    !
    address-family ipv4
       neighbor spines activate
+      neighbor spines route-map AS4200020000_in in
+      neighbor spines route-map AS4200020000_out out
       neighbor 10.0.5.0 activate
+      neighbor 10.0.5.0 route-map AS4200010003_out out
       redistribute connected route-map from_connected_to_bgp
    !
    vrf CARROT

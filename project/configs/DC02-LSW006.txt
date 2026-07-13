@@ -85,6 +85,7 @@ interface Loopback110
 interface Management1
 !
 interface Vlan10
+   shutdown
    vrf POTATO
    ip address virtual 10.1.10.1/24
 !
@@ -156,7 +157,7 @@ route-map from_connected_to_bgp permit 20
    match ip address prefix-list prf_loopback_spines
 !
 router bgp 4200020006
-   router-id 10.0.208.6
+   router-id 10.0.248.6
    timers bgp 10 30
    maximum-paths 4 ecmp 4
    neighbor spines peer group

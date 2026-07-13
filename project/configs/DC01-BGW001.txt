@@ -110,10 +110,33 @@ ip routing vrf CARROT
 ip routing vrf POTATO
 ip routing vrf TOMATO
 !
-ip prefix-list prf_loopback_dci seq 10 permit 10.0.245.0/24 le 32
-ip prefix-list prf_loopback_leafs seq 10 permit 10.0.8.0/22 le 32
-ip prefix-list prf_loopback_leafs seq 20 permit 10.0.12.0/22 le 32
-ip prefix-list prf_loopback_spines seq 10 permit 10.0.7.0/24 le 32
+ip prefix-list AS4200020004_out
+   seq 10 permit 10.0.245.0/24 le 32
+!
+ip prefix-list prf_loopback_dci
+   seq 10 permit 10.0.245.0/24 le 32
+!
+ip prefix-list prf_loopback_leafs
+   seq 10 permit 10.0.8.0/22 le 32
+   seq 20 permit 10.0.12.0/22 le 32
+!
+ip prefix-list prf_loopback_local_dci
+   seq 10 permit 10.0.245.1/32
+!
+ip prefix-list prf_loopback_spines
+   seq 10 permit 10.0.7.0/24 le 32
+!
+route-map AS4200010000_out permit 10
+   match ip address prefix-list prf_loopback_leafs
+!
+route-map AS4200010000_out permit 20
+   match ip address prefix-list prf_loopback_spines
+!
+route-map AS4200010000_out permit 30
+   match ip address prefix-list prf_loopback_local_dci
+!
+route-map AS4200020004_out permit 10
+   match ip address prefix-list AS4200020004_out
 !
 route-map dci permit 10
    match ip address prefix-list prf_loopback_dci
@@ -137,7 +160,7 @@ router bgp 4200010003
    neighbor spines bfd
    neighbor spines send-community extended
    neighbor 10.0.5.1 remote-as 4200020004
-   neighbor 10.0.5.1 send-community extended
+   neighbor 10.0.5.1 send-community standard extended
    neighbor 10.0.16.4 peer group spines
    neighbor 10.0.24.4 peer group spines
    !
@@ -196,7 +219,9 @@ router bgp 4200010003
    !
    address-family ipv4
       neighbor spines activate
+      neighbor spines route-map AS4200010000_out out
       neighbor 10.0.5.1 activate
+      neighbor 10.0.5.1 route-map AS4200020004_out out
       redistribute connected route-map from_connected_to_bgp
    !
    vrf CARROT
