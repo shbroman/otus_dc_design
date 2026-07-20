@@ -1,4 +1,3 @@
-
 ! Command: show running-config
 ! device: DC01-SSW001 (vEOS-lab, EOS-4.33.1.1F)
 !
@@ -70,10 +69,6 @@ interface Ethernet6
 interface Ethernet7
 !
 interface Ethernet8
-   description # DC02-SSW001 #
-   no switchport
-   ip address 10.0.5.0/31
-   arp aging timeout 300
 !
 interface Loopback0
    ip address 10.0.7.1/32
@@ -86,18 +81,12 @@ interface Management1
 !
 ip routing
 !
-ip prefix-list prf_dci_interconnect
-   seq 10 permit 10.0.5.0/24 le 31
-!
 ip prefix-list prf_loopback_leafs
    seq 10 permit 10.0.8.0/22 le 32
    seq 20 permit 10.0.12.0/22 le 32
 !
 ip prefix-list prf_loopback_spines
    seq 10 permit 10.0.7.0/24 le 32
-!
-route-map dci_interconnect permit 10
-   match ip address prefix-list prf_dci_interconnect
 !
 route-map from_connected_to_bgp permit 10
    match ip address prefix-list prf_loopback_leafs
@@ -114,26 +103,13 @@ router bgp 4200010000
    maximum-paths 4 ecmp 4
    bgp listen range 10.0.16.0/21 peer-group dyn_leafs peer-filter pf_leafs
    neighbor dyn_leafs peer group
-   neighbor dyn_leafs send-community extended
-   neighbor 10.0.5.1 remote-as 4200020000
-   neighbor 10.0.5.1 send-community extended
-   !
-   vlan 10
-      rd evpn domain all 10.0.7.1:10
-      route-target import export evpn domain all 64512:10
+   neighbor dyn_leafs send-community standard extended
    !
    address-family evpn
       neighbor dyn_leafs activate
-      neighbor 10.0.5.1 activate
-      neighbor 10.0.5.1 domain remote
-      domain identifier 4200010000:1
-      domain identifier 4200020000:1 remote
-      neighbor default next-hop-self received-evpn-routes route-type ip-prefix inter-domain
    !
    address-family ipv4
       neighbor dyn_leafs activate
-      neighbor 10.0.5.1 activate
-      neighbor 10.0.5.1 route-map dci_interconnect out
       redistribute connected route-map from_connected_to_bgp
 !
 router multicast
